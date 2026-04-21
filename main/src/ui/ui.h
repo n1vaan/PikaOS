@@ -22,7 +22,7 @@ extern "C" {
   #include "lvgl.h"
 #endif
 
-#include "ui_helpers.h"
+#include "ui_events.h"
 
 ///////////////////// SCREENS ////////////////////
 #include "ui_Screen1.h"
