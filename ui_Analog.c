@@ -5,7 +5,7 @@
 
 #include "ui.h"
 
-lv_obj_t *ui_Analog = NULL;lv_obj_t *ui_Label3 = NULL;lv_obj_t *ui_Label4 = NULL;lv_obj_t *ui_Label5 = NULL;lv_obj_t *ui_Label6 = NULL;lv_obj_t *ui_Label7 = NULL;lv_obj_t *ui_Label8 = NULL;lv_obj_t *ui_Label9 = NULL;lv_obj_t *ui_Label10 = NULL;lv_obj_t *ui_Label11 = NULL;lv_obj_t *ui_Label12 = NULL;lv_obj_t *ui_Label13 = NULL;lv_obj_t *ui_Label15 = NULL;lv_obj_t *ui_Image3 = NULL;
+lv_obj_t *ui_Analog = NULL;lv_obj_t *ui_Label3 = NULL;lv_obj_t *ui_Label4 = NULL;lv_obj_t *ui_Label5 = NULL;lv_obj_t *ui_Label6 = NULL;lv_obj_t *ui_Label7 = NULL;lv_obj_t *ui_Label8 = NULL;lv_obj_t *ui_Label9 = NULL;lv_obj_t *ui_Label10 = NULL;lv_obj_t *ui_Label11 = NULL;lv_obj_t *ui_Label12 = NULL;lv_obj_t *ui_Label13 = NULL;lv_obj_t *ui_Label15 = NULL;lv_obj_t *ui_Image3 = NULL;lv_obj_t *ui_Image1 = NULL;
 // event funtions
 void ui_event_Analog( lv_event_t * e) {
     lv_event_code_t event_code = lv_event_get_code(e);
@@ -155,6 +155,20 @@ lv_obj_clear_flag( ui_Image3, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 lv_obj_set_style_transform_pivot_x(ui_Image3, 120, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_transform_pivot_y(ui_Image3, 120, LV_PART_MAIN| LV_STATE_DEFAULT);
 
+ui_Image1 = lv_img_create(ui_Analog);
+lv_img_set_src(ui_Image1, &ui_img_835555188);
+lv_obj_set_width( ui_Image1, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Image1, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_Image1, -55 );
+lv_obj_set_y( ui_Image1, -57 );
+lv_obj_set_align( ui_Image1, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_Image1, LV_OBJ_FLAG_ADV_HITTEST );   /// Flags
+lv_obj_clear_flag( ui_Image1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_transform_angle(ui_Image1, 1300, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_transform_zoom(ui_Image1, 150, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_transform_pivot_x(ui_Image1, 120, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_transform_pivot_y(ui_Image1, 120, LV_PART_MAIN| LV_STATE_DEFAULT);
+
 lv_obj_add_event_cb(ui_Analog, ui_event_Analog, LV_EVENT_ALL, NULL);
 
 }
@@ -178,5 +192,6 @@ ui_Label12= NULL;
 ui_Label13= NULL;
 ui_Label15= NULL;
 ui_Image3= NULL;
+ui_Image1= NULL;
 
 }

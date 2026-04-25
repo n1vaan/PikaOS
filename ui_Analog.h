@@ -28,6 +28,7 @@ extern lv_obj_t *ui_Label12;
 extern lv_obj_t *ui_Label13;
 extern lv_obj_t *ui_Label15;
 extern lv_obj_t *ui_Image3;
+extern lv_obj_t *ui_Image1;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus
