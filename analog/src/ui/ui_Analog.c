@@ -26,7 +26,7 @@ void ui_Analog_screen_init(void)
 {
 ui_Analog = lv_obj_create(NULL);
 lv_obj_clear_flag( ui_Analog, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_bg_color(ui_Analog, lv_color_hex(0xFFCA00), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_color(ui_Analog, lv_color_hex(0xFFB900), LV_PART_MAIN | LV_STATE_DEFAULT );
 lv_obj_set_style_bg_opa(ui_Analog, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 
 ui_Label3 = lv_label_create(ui_Analog);
@@ -147,13 +147,14 @@ ui_Image3 = lv_img_create(ui_Analog);
 lv_img_set_src(ui_Image3, &ui_img_835555188);
 lv_obj_set_width( ui_Image3, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Image3, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Image3, -51 );
-lv_obj_set_y( ui_Image3, -57 );
+lv_obj_set_x( ui_Image3, -53 );
+lv_obj_set_y( ui_Image3, -55 );
 lv_obj_set_align( ui_Image3, LV_ALIGN_CENTER );
 lv_obj_add_flag( ui_Image3, LV_OBJ_FLAG_ADV_HITTEST );   /// Flags
 lv_obj_clear_flag( ui_Image3, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_transform_pivot_x(ui_Image3, 120, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_transform_pivot_y(ui_Image3, 120, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_transform_angle(ui_Image3, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_transform_pivot_x(ui_Image3, 112, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_transform_pivot_y(ui_Image3, 117, LV_PART_MAIN| LV_STATE_DEFAULT);
 
 lv_obj_add_event_cb(ui_Analog, ui_event_Analog, LV_EVENT_ALL, NULL);
 

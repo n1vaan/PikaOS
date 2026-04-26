@@ -19,17 +19,6 @@ extern lv_obj_t *ui_Panel3;
 extern lv_obj_t *ui_Panel4;
 extern lv_obj_t *ui_Panel2;
 extern lv_obj_t *ui_Panel5;
-extern lv_obj_t *ui_Pil12;
-extern lv_obj_t *ui_Pil1;
-extern lv_obj_t *ui_Pil2;
-extern lv_obj_t *ui_Pil4;
-extern lv_obj_t *ui_Pil5;
-extern lv_obj_t *ui_Pil6;
-extern lv_obj_t *ui_Pil7;
-extern lv_obj_t *ui_Pil8;
-extern lv_obj_t *ui_Pil10;
-extern lv_obj_t *ui_Pil11;
-extern lv_obj_t *ui_Image2;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus

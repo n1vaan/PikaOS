@@ -10,11 +10,9 @@
 static lv_disp_draw_buf_t draw_buf;
 static lv_color_t buf[LCD_WIDTH * LCD_HEIGHT / 10];
 
-/* ===== WiFi ===== */
 const char* ssid = "TANTRA";
 const char* password = "SK0029101978";
 
-/* ===== Display ===== */
 Arduino_DataBus *bus = new Arduino_ESP32QSPI(
   LCD_CS, LCD_SCLK, LCD_SDIO0, LCD_SDIO1,
   LCD_SDIO2, LCD_SDIO3
@@ -24,11 +22,11 @@ Arduino_CO5300 *gfx = new Arduino_CO5300(
   bus, LCD_RESET, 0, LCD_WIDTH, LCD_HEIGHT, 6, 0, 0, 0
 );
 
-/* ===== Regular Analog Overlay ===== */
+/* ===== Regular Analog ===== */
 lv_obj_t *analogHourLine = NULL;
 static lv_point_t analogHourPts[2];
 
-/* ===== PokeBall Analog Overlay ===== */
+/* ===== PokeBall Analog ===== */
 lv_obj_t *pokeHourLine = NULL;
 lv_obj_t *pokeMinuteLine = NULL;
 lv_obj_t *pokeSecondLine = NULL;
@@ -40,7 +38,18 @@ static lv_point_t pokeSecondPts[2];
 lv_obj_t *pokeTickLines[12];
 static lv_point_t pokeTickPts[12][2];
 
-/* ===== Flush ===== */
+void makeOverlayGestureFriendly(lv_obj_t *obj)
+{
+  if (!obj) return;
+
+  lv_obj_clear_flag(obj, LV_OBJ_FLAG_CLICKABLE);
+  lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+
+  // Let swipe events pass up to the parent screen
+  lv_obj_add_flag(obj, LV_OBJ_FLAG_EVENT_BUBBLE);
+  lv_obj_add_flag(obj, LV_OBJ_FLAG_GESTURE_BUBBLE);
+}
+
 void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 {
   uint32_t w = area->x2 - area->x1 + 1;
@@ -55,13 +64,11 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
   lv_disp_flush_ready(disp);
 }
 
-/* ===== LVGL Tick ===== */
 void lv_tick_cb(void *arg)
 {
   lv_tick_inc(LVGL_TICK_PERIOD_MS);
 }
 
-/* ===== Time Sync ===== */
 bool waitForTime(int timeoutMs = 10000)
 {
   struct tm timeinfo;
@@ -82,26 +89,23 @@ int wrapAngle(int angle)
   return angle;
 }
 
-/* =========================================================
-   REGULAR ANALOG CLOCK
-   Uses:
-   - ui_Analog screen
-   - ui_Image3 as minute hand
-   - analogHourLine as hour hand
-   ========================================================= */
+/* ===== Regular Analog Clock ===== */
 
 void setupRegularAnalogOverlay()
 {
   if (!ui_Analog) return;
+
+  lv_obj_add_flag(ui_Analog, LV_OBJ_FLAG_GESTURE_BUBBLE);
 
   if (ui_Image3) {
     lv_img_set_pivot(ui_Image3, 120, 120);
     lv_img_set_zoom(ui_Image3, 256);
     lv_img_set_angle(ui_Image3, 0);
 
-    lv_obj_set_style_opa(ui_Image3, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_clear_flag(ui_Image3, LV_OBJ_FLAG_ADV_HITTEST);
     lv_obj_clear_flag(ui_Image3, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(ui_Image3, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_add_flag(ui_Image3, LV_OBJ_FLAG_GESTURE_BUBBLE);
   }
 
   analogHourLine = lv_line_create(ui_Analog);
@@ -113,11 +117,12 @@ void setupRegularAnalogOverlay()
 
   lv_line_set_points(analogHourLine, analogHourPts, 2);
 
-  lv_obj_set_style_line_width(analogHourLine, 14, LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_color(analogHourLine, lv_color_hex(0xAC0000), LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_opa(analogHourLine, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_rounded(analogHourLine, true, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_line_width(analogHourLine, 14, LV_PART_MAIN);
+  lv_obj_set_style_line_color(analogHourLine, lv_color_hex(0xAC0000), LV_PART_MAIN);
+  lv_obj_set_style_line_opa(analogHourLine, LV_OPA_COVER, LV_PART_MAIN);
+  lv_obj_set_style_line_rounded(analogHourLine, true, LV_PART_MAIN);
 
+  makeOverlayGestureFriendly(analogHourLine);
   lv_obj_move_foreground(analogHourLine);
 }
 
@@ -150,13 +155,7 @@ void updateRegularAnalogClock(const struct tm& timeinfo)
   }
 }
 
-/* =========================================================
-   POKEBALL ANALOG CLOCK
-   Uses:
-   - ui_PokeBallAnalog screen
-   - line ticks
-   - line hour/minute/second hands
-   ========================================================= */
+/* ===== PokeBall Clock ===== */
 
 void hidePokeBallGeneratedParts()
 {
@@ -196,11 +195,12 @@ void createPokeBallTickLines()
     pokeTickLines[i] = lv_line_create(ui_PokeBallAnalog);
     lv_line_set_points(pokeTickLines[i], pokeTickPts[i], 2);
 
-    lv_obj_set_style_line_width(pokeTickLines[i], 14, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_line_color(pokeTickLines[i], lv_color_hex(0x303030), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_line_opa(pokeTickLines[i], LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_line_rounded(pokeTickLines[i], true, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_line_width(pokeTickLines[i], 14, LV_PART_MAIN);
+    lv_obj_set_style_line_color(pokeTickLines[i], lv_color_hex(0x303030), LV_PART_MAIN);
+    lv_obj_set_style_line_opa(pokeTickLines[i], LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_line_rounded(pokeTickLines[i], true, LV_PART_MAIN);
 
+    makeOverlayGestureFriendly(pokeTickLines[i]);
     lv_obj_move_foreground(pokeTickLines[i]);
   }
 }
@@ -209,29 +209,34 @@ void setupPokeBallOverlay()
 {
   if (!ui_PokeBallAnalog) return;
 
+  lv_obj_add_flag(ui_PokeBallAnalog, LV_OBJ_FLAG_GESTURE_BUBBLE);
+
   hidePokeBallGeneratedParts();
   createPokeBallTickLines();
 
   pokeHourLine = lv_line_create(ui_PokeBallAnalog);
   lv_line_set_points(pokeHourLine, pokeHourPts, 2);
-  lv_obj_set_style_line_width(pokeHourLine, 14, LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_color(pokeHourLine, lv_color_hex(0xFFCA00), LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_opa(pokeHourLine, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_rounded(pokeHourLine, true, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_line_width(pokeHourLine, 14, LV_PART_MAIN);
+  lv_obj_set_style_line_color(pokeHourLine, lv_color_hex(0xFFCA00), LV_PART_MAIN);
+  lv_obj_set_style_line_opa(pokeHourLine, LV_OPA_COVER, LV_PART_MAIN);
+  lv_obj_set_style_line_rounded(pokeHourLine, true, LV_PART_MAIN);
+  makeOverlayGestureFriendly(pokeHourLine);
 
   pokeMinuteLine = lv_line_create(ui_PokeBallAnalog);
   lv_line_set_points(pokeMinuteLine, pokeMinutePts, 2);
-  lv_obj_set_style_line_width(pokeMinuteLine, 14, LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_color(pokeMinuteLine, lv_color_hex(0xFFE066), LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_opa(pokeMinuteLine, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_rounded(pokeMinuteLine, true, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_line_width(pokeMinuteLine, 14, LV_PART_MAIN);
+  lv_obj_set_style_line_color(pokeMinuteLine, lv_color_hex(0xFFE066), LV_PART_MAIN);
+  lv_obj_set_style_line_opa(pokeMinuteLine, LV_OPA_COVER, LV_PART_MAIN);
+  lv_obj_set_style_line_rounded(pokeMinuteLine, true, LV_PART_MAIN);
+  makeOverlayGestureFriendly(pokeMinuteLine);
 
   pokeSecondLine = lv_line_create(ui_PokeBallAnalog);
   lv_line_set_points(pokeSecondLine, pokeSecondPts, 2);
-  lv_obj_set_style_line_width(pokeSecondLine, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_color(pokeSecondLine, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_opa(pokeSecondLine, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_rounded(pokeSecondLine, true, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_line_width(pokeSecondLine, 6, LV_PART_MAIN);
+  lv_obj_set_style_line_color(pokeSecondLine, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+  lv_obj_set_style_line_opa(pokeSecondLine, LV_OPA_COVER, LV_PART_MAIN);
+  lv_obj_set_style_line_rounded(pokeSecondLine, true, LV_PART_MAIN);
+  makeOverlayGestureFriendly(pokeSecondLine);
 }
 
 void updatePokeBallClock(const struct tm& timeinfo)
@@ -279,9 +284,7 @@ void updatePokeBallClock(const struct tm& timeinfo)
   }
 }
 
-/* =========================================================
-   SETUP
-   ========================================================= */
+/* ===== Setup ===== */
 
 void setup()
 {
@@ -358,9 +361,7 @@ void setup()
   esp_timer_start_periodic(timer, LVGL_TICK_PERIOD_MS * 1000);
 }
 
-/* =========================================================
-   LOOP
-   ========================================================= */
+/* ===== Loop ===== */
 
 void loop()
 {
