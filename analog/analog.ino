@@ -11,10 +11,10 @@ static lv_disp_draw_buf_t draw_buf;
 static lv_color_t buf[LCD_WIDTH * LCD_HEIGHT / 10];
 
 lv_obj_t *hourLine = NULL;
-static lv_point_t hourPts[2];
+static lv_point_t hourPts[2]; 
 
 const char* ssid = "TANTRA";
-const char* password = "SK0029101978";
+const char* password = "SK0029101978"; 
 
 Arduino_DataBus *bus = new Arduino_ESP32QSPI(
   LCD_CS, LCD_SCLK, LCD_SDIO0, LCD_SDIO1,
@@ -171,13 +171,15 @@ void setup()
 
   hourPts[0].x = LCD_WIDTH / 2;
   hourPts[0].y = LCD_HEIGHT / 2;
+  Serial.println(hourPts[0].x);
+  Serial.println(hourPts[0].y);
   hourPts[1].x = LCD_WIDTH / 2 + 90;
   hourPts[1].y = LCD_HEIGHT / 2;
 
   lv_line_set_points(hourLine, hourPts, 2);
 
   lv_obj_set_style_line_width(hourLine, 14, LV_PART_MAIN | LV_STATE_DEFAULT);
-  lv_obj_set_style_line_color(hourLine, lv_color_hex(0xAC0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_line_color(hourLine, lv_color_hex(0xD41800), LV_PART_MAIN | LV_STATE_DEFAULT);
   lv_obj_set_style_line_opa(hourLine, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
   lv_obj_set_style_line_rounded(hourLine, true, LV_PART_MAIN | LV_STATE_DEFAULT);
 

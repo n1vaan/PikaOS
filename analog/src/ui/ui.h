@@ -26,6 +26,8 @@ extern "C" {
 #include "ui_comp.h"
 #include "ui_comp_hook.h"
 #include "ui_events.h"
+#include "ui_theme_manager.h"
+#include "ui_themes.h"
 
 ///////////////////// SCREENS ////////////////////
 #include "ui_PokeBallAnalog.h"
