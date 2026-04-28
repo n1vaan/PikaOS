@@ -147,8 +147,8 @@ ui_Image3 = lv_img_create(ui_Analog);
 lv_img_set_src(ui_Image3, &ui_img_835555188);
 lv_obj_set_width( ui_Image3, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Image3, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Image3, -53 );
-lv_obj_set_y( ui_Image3, -55 );
+lv_obj_set_x( ui_Image3, -52 );
+lv_obj_set_y( ui_Image3, -56 );
 lv_obj_set_align( ui_Image3, LV_ALIGN_CENTER );
 lv_obj_add_flag( ui_Image3, LV_OBJ_FLAG_ADV_HITTEST );   /// Flags
 lv_obj_clear_flag( ui_Image3, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
