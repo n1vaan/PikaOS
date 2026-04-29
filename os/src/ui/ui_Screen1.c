@@ -10,17 +10,17 @@ lv_obj_t *ui_Screen1 = NULL;lv_obj_t *ui_Label1 = NULL;lv_obj_t *ui_Label2 = NUL
 void ui_event_Screen1( lv_event_t * e) {
     lv_event_code_t event_code = lv_event_get_code(e);
 
-if ( event_code == LV_EVENT_GESTURE &&  lv_indev_get_gesture_dir(lv_indev_get_act()) == LV_DIR_LEFT  ) {
-lv_indev_wait_release(lv_indev_get_act());
-      _ui_screen_change( &ui_Analog, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_Analog_screen_init);
-}
 if ( event_code == LV_EVENT_GESTURE &&  lv_indev_get_gesture_dir(lv_indev_get_act()) == LV_DIR_RIGHT  ) {
 lv_indev_wait_release(lv_indev_get_act());
-      _ui_screen_change( &ui_PokeBallAnalog, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_PokeBallAnalog_screen_init);
+      _ui_screen_change( &ui_PokeBallAnalog, LV_SCR_LOAD_ANIM_MOVE_RIGHT, 500, 0, &ui_PokeBallAnalog_screen_init);
 }
 if ( event_code == LV_EVENT_GESTURE &&  lv_indev_get_gesture_dir(lv_indev_get_act()) == LV_DIR_BOTTOM  ) {
 lv_indev_wait_release(lv_indev_get_act());
-      _ui_screen_change( &ui_Timer, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_Timer_screen_init);
+      _ui_screen_change( &ui_Timer, LV_SCR_LOAD_ANIM_MOVE_BOTTOM, 500, 0, &ui_Timer_screen_init);
+}
+if ( event_code == LV_EVENT_GESTURE &&  lv_indev_get_gesture_dir(lv_indev_get_act()) == LV_DIR_LEFT  ) {
+lv_indev_wait_release(lv_indev_get_act());
+      _ui_screen_change( &ui_Analog, LV_SCR_LOAD_ANIM_MOVE_LEFT, 500, 0, &ui_Analog_screen_init);
 }
 }
 

@@ -13,7 +13,7 @@ void ui_event_Timer( lv_event_t * e) {
 
 if ( event_code == LV_EVENT_GESTURE &&  lv_indev_get_gesture_dir(lv_indev_get_act()) == LV_DIR_TOP  ) {
 lv_indev_wait_release(lv_indev_get_act());
-      _ui_screen_change( &ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_Screen1_screen_init);
+      _ui_screen_change( &ui_Screen1, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, &ui_Screen1_screen_init);
 }
 }
 
@@ -36,9 +36,7 @@ lv_label_set_text(ui_Label14,"00:25");
 lv_obj_set_style_text_color(ui_Label14, lv_color_hex(0xE30B0B), LV_PART_MAIN | LV_STATE_DEFAULT );
 lv_obj_set_style_text_opa(ui_Label14, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_text_font(ui_Label14, &ui_font_Pokemon, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_transform_zoom(ui_Label14, 200, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_transform_pivot_x(ui_Label14, 220, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_transform_pivot_y(ui_Label14, 30, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_transform_zoom(ui_Label14, 256, LV_PART_MAIN| LV_STATE_DEFAULT);
 
 ui_SetTimerContainer = lv_obj_create(ui_Timer);
 lv_obj_remove_style_all(ui_SetTimerContainer);

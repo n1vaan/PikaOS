@@ -5,7 +5,7 @@
 
 #include "ui.h"
 
-lv_obj_t *ui_Settings = NULL;lv_obj_t *ui_Container6 = NULL;lv_obj_t *ui_Button11 = NULL;lv_obj_t *ui_Button7 = NULL;
+lv_obj_t *ui_Settings = NULL;lv_obj_t *ui_Button4 = NULL;lv_obj_t *ui_Button7 = NULL;
 // event funtions
 
 // build funtions
@@ -17,27 +17,20 @@ lv_obj_clear_flag( ui_Settings, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 lv_obj_set_style_bg_color(ui_Settings, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
 lv_obj_set_style_bg_opa(ui_Settings, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Container6 = lv_obj_create(ui_Settings);
-lv_obj_remove_style_all(ui_Container6);
-lv_obj_set_width( ui_Container6, 300);
-lv_obj_set_height( ui_Container6, 300);
-lv_obj_set_align( ui_Container6, LV_ALIGN_CENTER );
-lv_obj_clear_flag( ui_Container6, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-
-ui_Button11 = lv_btn_create(ui_Settings);
-lv_obj_set_width( ui_Button11, 144);
-lv_obj_set_height( ui_Button11, 50);
-lv_obj_set_x( ui_Button11, -80 );
-lv_obj_set_y( ui_Button11, -131 );
-lv_obj_set_align( ui_Button11, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button11, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button11, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+ui_Button4 = lv_btn_create(ui_Settings);
+lv_obj_set_width( ui_Button4, 128);
+lv_obj_set_height( ui_Button4, 124);
+lv_obj_set_x( ui_Button4, -75 );
+lv_obj_set_y( ui_Button4, -113 );
+lv_obj_set_align( ui_Button4, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_Button4, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_Button4, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 
 ui_Button7 = lv_btn_create(ui_Settings);
-lv_obj_set_width( ui_Button7, 144);
-lv_obj_set_height( ui_Button7, 50);
-lv_obj_set_x( ui_Button7, 80 );
-lv_obj_set_y( ui_Button7, -130 );
+lv_obj_set_width( ui_Button7, 128);
+lv_obj_set_height( ui_Button7, 124);
+lv_obj_set_x( ui_Button7, 75 );
+lv_obj_set_y( ui_Button7, -113 );
 lv_obj_set_align( ui_Button7, LV_ALIGN_CENTER );
 lv_obj_add_flag( ui_Button7, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
 lv_obj_clear_flag( ui_Button7, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
@@ -50,8 +43,7 @@ void ui_Settings_screen_destroy(void)
 
 // NULL screen variables
 ui_Settings= NULL;
-ui_Container6= NULL;
-ui_Button11= NULL;
+ui_Button4= NULL;
 ui_Button7= NULL;
 
 }

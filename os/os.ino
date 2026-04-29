@@ -7,6 +7,17 @@
 #include "time.h"
 #include "src/ui/ui.h"
 
+#include "ESP_I2S.h"
+#include "esp_check.h"
+#include "es8311.h"
+#include "canon.h"
+
+I2SClass i2s;
+#define EXAMPLE_SAMPLE_RATE 8000
+#define EXAMPLE_VOICE_VOLUME 80
+
+volatile bool play_alarm = false; // Set to true to start, false to stop
+
 /* ===== WiFi Settings ===== */
 const char* ssid = "TANTRA";
 const char* password = "SK0029101978";
@@ -39,6 +50,18 @@ static lv_point_t pokeHourPts[2], pokeMinutePts[2], pokeSecondPts[2];
 lv_obj_t *pokeTickLines[12];
 static lv_point_t pokeTickPts[12][2];
 
+int timer_seconds = 1500; // Default 25:00 (25 * 60)
+bool timer_running = false;
+unsigned long last_timer_update = 0;
+
+// Helper to format the label (MM:SS)
+void update_timer_label() {
+    int minutes = timer_seconds / 60;
+    int seconds = timer_seconds % 60;
+    char buf[8];
+    snprintf(buf, sizeof(buf), "%02d:%02d", minutes, seconds);
+    if (ui_Label14) lv_label_set_text(ui_Label14, buf);
+}
 /* ===== Touch Callbacks ===== */
 void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data) {
   uint8_t touched = touch.getPoint(tx, ty, touch.getSupportTouchPoint());
@@ -137,6 +160,76 @@ void updateAllLogic(const struct tm& ti) {
     if (ui_Label2) lv_label_set_text(ui_Label2, dB);
   }
 }
+void handle_timer_buttons(lv_event_t * e) {
+    lv_obj_t * target = lv_event_get_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+
+    // Triggers on single click OR repeatedly while holding
+    if (code == LV_EVENT_CLICKED || code == LV_EVENT_LONG_PRESSED_REPEAT) {
+        if (target == ui_Button5)      timer_seconds += 60; // +1 Min
+        else if (target == ui_Button1) timer_seconds -= 60; // -1 Min
+        else if (target == ui_Button2) timer_seconds += 1;  // +1 Sec
+        else if (target == ui_Button3) timer_seconds -= 1;  // -1 Sec
+
+        // Bounds checking
+        if (timer_seconds < 0) timer_seconds = 0;
+        if (timer_seconds > 5999) timer_seconds = 5999; // Max 99:59
+
+        update_timer_label();
+    }
+}
+
+void start_timer_cb(lv_event_t * e) {
+    if (timer_seconds > 0) {
+        timer_running = true;
+        play_alarm = false; // Ensure sound is off
+        last_timer_update = millis();
+        lv_obj_add_flag(ui_SetTimerContainer, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(ui_ActiveTimerContainer, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+void end_timer_cb(lv_event_t * e) {
+    timer_running = false;
+    play_alarm = false; // <--- ADD THIS: Stops the sound
+    lv_obj_clear_flag(ui_SetTimerContainer, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(ui_ActiveTimerContainer, LV_OBJ_FLAG_HIDDEN);
+    lv_label_set_text(ui_Label23, "Pause"); 
+}
+
+void pause_timer_cb(lv_event_t * e) {
+    timer_running = !timer_running;
+    lv_label_set_text(ui_Label23, timer_running ? "Pause" : "Resume");
+}
+
+esp_err_t es8311_codec_init(void) {
+  es8311_handle_t es_handle = es8311_create(0, ES8311_ADDRRES_0);
+  const es8311_clock_config_t es_clk = {
+    .mclk_from_mclk_pin = true,
+    .mclk_frequency = EXAMPLE_SAMPLE_RATE * 256,
+    .sample_frequency = EXAMPLE_SAMPLE_RATE
+  };
+  es8311_init(es_handle, &es_clk, ES8311_RESOLUTION_16, ES8311_RESOLUTION_16);
+  es8311_voice_volume_set(es_handle, EXAMPLE_VOICE_VOLUME, NULL);
+  return ESP_OK;
+}
+
+void audio_task(void *param) {
+  i2s.setPins(BCLKPIN, WSPIN, DIPIN, DOPIN, MCLKPIN);
+  i2s.begin(I2S_MODE_STD, EXAMPLE_SAMPLE_RATE, I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO, I2S_STD_SLOT_BOTH);
+  Wire.begin(15, 14); // Codec I2C
+  es8311_codec_init();
+
+  while (1) {
+    if (play_alarm) {
+      // This will loop the sound as long as play_alarm is true
+      i2s.write((uint8_t *)canon_pcm, canon_pcm_len);
+    } else {
+      vTaskDelay(100 / portTICK_PERIOD_MS); // Idle wait
+    }
+    vTaskDelay(1); 
+  }
+}
 
 /* ===== SETUP ===== */
 void setup() {
@@ -177,6 +270,9 @@ void setup() {
   indev_drv.read_cb = my_touchpad_read;
   lv_indev_drv_register(&indev_drv);
 
+  indev_drv.long_press_time = 500;        // Wait 0.5s before repeating
+  indev_drv.long_press_repeat_time = 100; // Repeat every 0.1s while held
+
   // 5. SquareLine UI
   ui_init();
   
@@ -190,11 +286,23 @@ void setup() {
   setupRegularAnalog();
   setupPokeBall();
 
+  lv_obj_add_event_cb(ui_Button5, handle_timer_buttons, LV_EVENT_ALL, NULL);
+  lv_obj_add_event_cb(ui_Button1, handle_timer_buttons, LV_EVENT_ALL, NULL);
+  lv_obj_add_event_cb(ui_Button2, handle_timer_buttons, LV_EVENT_ALL, NULL);
+  lv_obj_add_event_cb(ui_Button3, handle_timer_buttons, LV_EVENT_ALL, NULL);
+
+  // Control buttons remain LV_EVENT_CLICKED
+  lv_obj_add_event_cb(ui_Button6, start_timer_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(ui_Button9, end_timer_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(ui_Button10, pause_timer_cb, LV_EVENT_CLICKED, NULL);  
+  update_timer_label(); // Set initial text
+
   // 7. Tick Timer
   const esp_timer_create_args_t timer_args = { .callback = &lv_tick_cb, .name = "tick" };
   esp_timer_handle_t timer;
   esp_timer_create(&timer_args, &timer);
   esp_timer_start_periodic(timer, LVGL_TICK_PERIOD_MS * 1000);
+  xTaskCreatePinnedToCore(audio_task, "audio_task", 4096, NULL, 1, NULL, 1);
 }
 
 void loop() {
@@ -206,6 +314,21 @@ void loop() {
   if (getLocalTime(&ti) && ti.tm_sec != lastSec) {
     lastSec = ti.tm_sec;
     updateAllLogic(ti);
+  }
+  // Timer Countdown Logic
+  if (timer_running && timer_seconds > 0) {
+      if (millis() - last_timer_update >= 1000) {
+          last_timer_update = millis();
+          timer_seconds--;
+          update_timer_label();
+          
+          // Trigger sound effect on finish
+          if (timer_seconds == 0) {
+              timer_running = false;
+              play_alarm = true; // <--- ADD THIS: Starts the sound 
+              lv_label_set_text(ui_Label23, "Finish");
+          }
+      }
   }
   delay(5);
 }

@@ -14,8 +14,7 @@ extern "C" {
 extern void ui_Settings_screen_init(void);
 extern void ui_Settings_screen_destroy(void);
 extern lv_obj_t *ui_Settings;
-extern lv_obj_t *ui_Container6;
-extern lv_obj_t *ui_Button11;
+extern lv_obj_t *ui_Button4;
 extern lv_obj_t *ui_Button7;
 // CUSTOM VARIABLES
 
