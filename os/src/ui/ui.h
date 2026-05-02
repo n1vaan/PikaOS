@@ -35,6 +35,8 @@ extern "C" {
 #include "ui_Analog.h"
 #include "ui_Timer.h"
 #include "ui_Settings.h"
+#include "ui_Photo.h"
+#include "ui_Photo2.h"
 
 ///////////////////// VARIABLES ////////////////////
 
@@ -43,11 +45,14 @@ extern lv_obj_t *ui____initial_actions0;
 
 // IMAGES AND IMAGE SETS
 LV_IMG_DECLARE( ui_img_835555188);   // assets/56-566269_28-collection-of-pikachu-tail-clipart.png
-LV_IMG_DECLARE( ui_img_913658961);   // assets/Untitled design-2.png
+LV_IMG_DECLARE( ui_img_allyellow_png);   // assets/allYellow.png
+LV_IMG_DECLARE( ui_img_pokeoutfits_png);   // assets/pokeOutfits.png
 
 // FONTS
 LV_FONT_DECLARE( ui_font_Font1);
 LV_FONT_DECLARE( ui_font_Pokemon);
+LV_FONT_DECLARE( ui_font_Poke30);
+LV_FONT_DECLARE( ui_font_Poke90);
 
 // UI INIT
 void ui_init(void);

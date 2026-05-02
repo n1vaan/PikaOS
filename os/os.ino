@@ -25,7 +25,9 @@ const char* password = "SK0029101978";
 /* ===== LVGL Settings ===== */
 #define LVGL_TICK_PERIOD_MS 2
 static lv_disp_draw_buf_t draw_buf;
-static lv_color_t buf[LCD_WIDTH * LCD_HEIGHT / 10];
+
+// CHANGE THIS: Allocate the buffer in PSRAM
+static lv_color_t *buf;
 static lv_indev_drv_t indev_drv;
 
 /* ===== Touch Driver (CST9217) ===== */
@@ -133,6 +135,7 @@ void updateAllLogic(const struct tm& ti) {
   lv_obj_t *scr = lv_scr_act();
   int cx = LCD_WIDTH / 2, cy = LCD_HEIGHT / 2;
 
+  /* Existing Clock Logics */
   if (scr == ui_Analog) {
     int mAngle = ((ti.tm_min * 60) + 420) % 3600;
     float hRad = (((ti.tm_hour % 12) * 30.0) + (ti.tm_min * 0.5) - 90.0) * DEG_TO_RAD;
@@ -158,6 +161,22 @@ void updateAllLogic(const struct tm& ti) {
     strftime(dB, sizeof(dB), "%A, %B %d, %Y", &ti);
     if (ui_Label1) lv_label_set_text(ui_Label1, tB);
     if (ui_Label2) lv_label_set_text(ui_Label2, dB);
+  }
+  
+  /* --- NEW PHOTO SCREEN LOGIC --- */
+  else if (scr == ui_Photo || scr == ui_Photo2) {
+    char tB[16], dB[40];
+    snprintf(tB, sizeof(tB), "%02d:%02d", ti.tm_hour, ti.tm_min);
+    
+    // Update Photo 1 (Allyellow)
+    if (ui_Label25) lv_label_set_text(ui_Label25, tB);
+    
+    // Update Photo 2 (Pokeoutfits)
+    if (ui_Label27) lv_label_set_text(ui_Label27, tB);
+    
+    // Update the Date on Photo 2
+    strftime(dB, sizeof(dB), "%A, %B %d, %Y", &ti);
+    if (ui_Label21) lv_label_set_text(ui_Label21, dB);
   }
 }
 void handle_timer_buttons(lv_event_t * e) {
@@ -234,8 +253,33 @@ void audio_task(void *param) {
 /* ===== SETUP ===== */
 void setup() {
   Serial.begin(115200);
+  delay(1000); // Give serial time to stabilize
+  buf = (lv_color_t *)heap_caps_malloc(LCD_WIDTH * LCD_HEIGHT * sizeof(lv_color_t), MALLOC_CAP_SPIRAM);
+  
+  // Check if allocation worked
+  if (buf == NULL) {
+      Serial.println("PSRAM Allocation Failed! System will freeze.");
+  }
+  // 1. Display Hardware Init (Get the screen on early)
+  gfx->begin();
+  gfx->setBrightness(255);
 
-  // 1. Touch Initialization (Official documented way)
+  // 3. LVGL Core Init
+  lv_init();
+  lv_img_cache_set_size(4); // Vital for AMOLED performance
+  lv_disp_draw_buf_init(&draw_buf, buf, NULL, LCD_WIDTH * LCD_HEIGHT / 10);
+
+  static lv_disp_drv_t disp_drv;
+  lv_disp_drv_init(&disp_drv);
+  disp_drv.hor_res = LCD_WIDTH; 
+  disp_drv.ver_res = LCD_HEIGHT;
+  disp_drv.flush_cb = my_disp_flush; 
+  disp_drv.draw_buf = &draw_buf;
+  disp_drv.sw_rotate = 1;
+  lv_disp_drv_register(&disp_drv);
+  lv_disp_set_rotation(NULL, LV_DISP_ROT_90);
+
+  // 4. Input (Touch) Init
   Wire.begin(IIC_SDA, IIC_SCL);
   pinMode(TP_INT, INPUT_PULLUP);
   digitalWrite(TP_RESET, LOW); delay(30); digitalWrite(TP_RESET, HIGH); delay(50);
@@ -244,45 +288,21 @@ void setup() {
   touch.setMaxCoordinates(LCD_WIDTH, LCD_HEIGHT);
   touch.setMirrorXY(true, true);
 
-  // 2. WiFi & Time
-  WiFi.begin(ssid, password);
-  configTime(0, 0, "pool.ntp.org");
-  setenv("TZ", "EST5EDT,M3.2.0,M11.1.0", 1);
-  tzset();
-
-  // 3. Display & LVGL
-  gfx->begin();
-  gfx->setBrightness(255);
-  lv_init();
-  lv_disp_draw_buf_init(&draw_buf, buf, NULL, LCD_WIDTH * LCD_HEIGHT / 10);
-
-  static lv_disp_drv_t disp_drv;
-  lv_disp_drv_init(&disp_drv);
-  disp_drv.hor_res = LCD_WIDTH; disp_drv.ver_res = LCD_HEIGHT;
-  disp_drv.flush_cb = my_disp_flush; disp_drv.draw_buf = &draw_buf;
-  disp_drv.sw_rotate = 1;
-  lv_disp_drv_register(&disp_drv);
-  lv_disp_set_rotation(NULL, LV_DISP_ROT_90);
-
-  // 4. Input Driver Registration
   lv_indev_drv_init(&indev_drv);
   indev_drv.type = LV_INDEV_TYPE_POINTER;
   indev_drv.read_cb = my_touchpad_read;
   lv_indev_drv_register(&indev_drv);
 
-  indev_drv.long_press_time = 500;        // Wait 0.5s before repeating
-  indev_drv.long_press_repeat_time = 100; // Repeat every 0.1s while held
-
-  // 5. SquareLine UI
+  // 6. SquareLine UI Start
   ui_init();
   
-  // Disable scrolling to prioritize gestures
+  // Disable scrolling for clocks
   lv_obj_clear_flag(ui_Analog, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(ui_PokeBallAnalog, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(ui_Screen1, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(ui_Timer, LV_OBJ_FLAG_SCROLLABLE);
 
-  // 6. Clock Face Setup
+  // 7. Custom Overlays & Events
   setupRegularAnalog();
   setupPokeBall();
 
@@ -290,14 +310,17 @@ void setup() {
   lv_obj_add_event_cb(ui_Button1, handle_timer_buttons, LV_EVENT_ALL, NULL);
   lv_obj_add_event_cb(ui_Button2, handle_timer_buttons, LV_EVENT_ALL, NULL);
   lv_obj_add_event_cb(ui_Button3, handle_timer_buttons, LV_EVENT_ALL, NULL);
-
-  // Control buttons remain LV_EVENT_CLICKED
   lv_obj_add_event_cb(ui_Button6, start_timer_cb, LV_EVENT_CLICKED, NULL);
   lv_obj_add_event_cb(ui_Button9, end_timer_cb, LV_EVENT_CLICKED, NULL);
   lv_obj_add_event_cb(ui_Button10, pause_timer_cb, LV_EVENT_CLICKED, NULL);  
-  update_timer_label(); // Set initial text
+  update_timer_label();
 
-  // 7. Tick Timer
+  // 8. WiFi, Time & Audio
+  WiFi.begin(ssid, password);
+  configTime(0, 0, "pool.ntp.org");
+  setenv("TZ", "EST5EDT,M3.2.0,M11.1.0", 1);
+  tzset();
+
   const esp_timer_create_args_t timer_args = { .callback = &lv_tick_cb, .name = "tick" };
   esp_timer_handle_t timer;
   esp_timer_create(&timer_args, &timer);
@@ -306,13 +329,23 @@ void setup() {
 }
 
 void loop() {
-  lv_obj_invalidate(lv_scr_act()); // Add this: Forces a full screen refresh every cycle
-  lv_timer_handler();
+  static lv_obj_t * last_scr = NULL;
+  lv_obj_t * active_scr = lv_scr_act();
+  
+  // If the screen just changed, kill the image cache immediately
+  if (active_scr != last_scr) {
+      lv_img_cache_invalidate_src(NULL); 
+      last_scr = active_scr;
+      Serial.println("Screen Changed: Cache Cleared");
+  }
+
+  lv_timer_handler();  
   
   static int lastSec = -1;
   struct tm ti;
   if (getLocalTime(&ti) && ti.tm_sec != lastSec) {
     lastSec = ti.tm_sec;
+    lv_obj_invalidate(lv_scr_act()); // Add this: Forces a full screen refresh every cycle
     updateAllLogic(ti);
   }
   // Timer Countdown Logic
@@ -320,6 +353,7 @@ void loop() {
       if (millis() - last_timer_update >= 1000) {
           last_timer_update = millis();
           timer_seconds--;
+          
           update_timer_label();
           
           // Trigger sound effect on finish

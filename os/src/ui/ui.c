@@ -38,6 +38,8 @@ ui_Screen1_screen_init();
 ui_Analog_screen_init();
 ui_Timer_screen_init();
 ui_Settings_screen_init();
+ui_Photo_screen_init();
+ui_Photo2_screen_init();
 ui____initial_actions0 = lv_obj_create(NULL);
 lv_disp_load_scr( ui_PokeBallAnalog);
 }
@@ -48,4 +50,6 @@ ui_Screen1_screen_destroy();
 ui_Analog_screen_destroy();
 ui_Timer_screen_destroy();
 ui_Settings_screen_destroy();
+ui_Photo_screen_destroy();
+ui_Photo2_screen_destroy();
 }
