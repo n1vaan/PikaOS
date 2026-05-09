@@ -157,14 +157,22 @@ void updateAllLogic(const struct tm& ti) {
     lv_line_set_points(pokeSecondLine, pokeSecondPts, 2);
   }
   else if (scr == ui_Screen1) {
-    char tB[16], dB[40];
-    snprintf(tB, sizeof(tB), "%02d:%02d", ti.tm_hour, ti.tm_min);
-    strftime(dB, sizeof(dB), "%A, %B %d, %Y", &ti);
-    if (ui_Label1) lv_label_set_text(ui_Label1, tB);
-    if (ui_Label2) lv_label_set_text(ui_Label2, dB);
-  }
-  
-  /* --- NEW PHOTO SCREEN LOGIC --- */
+
+      char tB[16], dB[40];
+
+      int hour = ti.tm_hour % 12;
+
+      if (hour == 0) hour = 12;
+
+      snprintf(tB, sizeof(tB), "%d:%02d", hour, ti.tm_min);
+
+      strftime(dB, sizeof(dB), "%A, %B %d, %Y", &ti);
+
+      if (ui_Label1) lv_label_set_text(ui_Label1, tB);
+
+      if (ui_Label2) lv_label_set_text(ui_Label2, dB);
+
+  }  /* --- NEW PHOTO SCREEN LOGIC --- */
   else if (scr == ui_Photo || scr == ui_Photo2) {
     char tB[16], dB[40];
     snprintf(tB, sizeof(tB), "%02d:%02d", ti.tm_hour, ti.tm_min);
@@ -336,15 +344,20 @@ void pause_timer_cb(lv_event_t * e) {
 }
 
 esp_err_t es8311_codec_init(void) {
-  es_handle = es8311_create(0, ES8311_ADDRRES_0); // This saves it to the global variable
+  es_handle = es8311_create(0, ES8311_ADDRRES_0);
   if (!es_handle) return ESP_FAIL;
+
   const es8311_clock_config_t es_clk = {
+    .mclk_inverted = false,
+    .sclk_inverted = false,
     .mclk_from_mclk_pin = true,
     .mclk_frequency = EXAMPLE_SAMPLE_RATE * 256,
     .sample_frequency = EXAMPLE_SAMPLE_RATE
   };
-  es8311_init(es_handle, &es_clk, ES8311_RESOLUTION_16, ES8311_RESOLUTION_16);
-  es8311_voice_volume_set(es_handle, EXAMPLE_VOICE_VOLUME, NULL);
+
+  ESP_RETURN_ON_ERROR(es8311_init(es_handle, &es_clk, ES8311_RESOLUTION_16, ES8311_RESOLUTION_16), "ES8311", "init failed");
+  ESP_RETURN_ON_ERROR(es8311_microphone_config(es_handle, false), "ES8311", "mic config failed");
+  ESP_RETURN_ON_ERROR(es8311_voice_volume_set(es_handle, EXAMPLE_VOICE_VOLUME, NULL), "ES8311", "volume set failed");
   return ESP_OK;
 }
 
@@ -510,7 +523,7 @@ void setup() {
   esp_timer_handle_t timer;
   esp_timer_create(&timer_args, &timer);
   esp_timer_start_periodic(timer, LVGL_TICK_PERIOD_MS * 1000);
-  xTaskCreatePinnedToCore(audio_task, "audio_task", 4096, NULL, 1, NULL, 1);
+  xTaskCreatePinnedToCore(audio_task, "audio_task", 8192, NULL, 1, NULL, 1);
 }
 
 void loop() {
