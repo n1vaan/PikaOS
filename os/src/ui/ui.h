@@ -50,9 +50,11 @@ LV_IMG_DECLARE( ui_img_pokeoutfits_png);   // assets/pokeOutfits.png
 
 // FONTS
 LV_FONT_DECLARE( ui_font_Font1);
-LV_FONT_DECLARE( ui_font_Pokemon);
+LV_FONT_DECLARE( ui_font_Icons);
+LV_FONT_DECLARE( ui_font_IconsLarge);
 LV_FONT_DECLARE( ui_font_Poke30);
 LV_FONT_DECLARE( ui_font_Poke90);
+LV_FONT_DECLARE( ui_font_Pokemon);
 
 // UI INIT
 void ui_init(void);

@@ -13,9 +13,39 @@ extern "C" {
 // SCREEN: ui_Settings
 extern void ui_Settings_screen_init(void);
 extern void ui_Settings_screen_destroy(void);
+extern void ui_event_Settings( lv_event_t * e);
 extern lv_obj_t *ui_Settings;
-extern lv_obj_t *ui_Button4;
-extern lv_obj_t *ui_Button7;
+extern lv_obj_t *ui_WifiButton;
+extern lv_obj_t *ui_Label24;
+extern lv_obj_t *ui_DarkMode;
+extern lv_obj_t *ui_Label26;
+extern lv_obj_t *ui_Brightness;
+extern lv_obj_t *ui_Slider1;
+extern lv_obj_t *ui_Label29;
+extern lv_obj_t *ui_Label30;
+extern lv_obj_t *ui_Volume;
+extern lv_obj_t *ui_Slider2;
+extern lv_obj_t *ui_Label28;
+extern lv_obj_t *ui_Label31;
+extern lv_obj_t *ui_Misc;
+extern lv_obj_t *ui_Switch1;
+extern lv_obj_t *ui_Switch2;
+extern lv_obj_t *ui_Label32;
+extern lv_obj_t *ui_Label33;
+extern lv_obj_t *ui_Button8;
+extern lv_obj_t *ui_Label34;
+extern lv_obj_t *ui_WifiConnectPopup;
+extern lv_obj_t *ui_Panel8;
+extern lv_obj_t *ui_Label35;
+extern void ui_event_NetworkBox( lv_event_t * e);
+extern lv_obj_t *ui_NetworkBox;
+extern lv_obj_t *ui_Label36;
+extern lv_obj_t *ui_PasswordBox;
+extern lv_obj_t *ui_Connect;
+extern lv_obj_t *ui_Label37;
+extern lv_obj_t *ui_Cancel;
+extern lv_obj_t *ui_Label38;
+extern lv_obj_t *ui_Keyboard;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus

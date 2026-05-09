@@ -12,11 +12,12 @@
 #include "es8311.h"
 #include "canon.h"
 
+es8311_handle_t es_handle = NULL; // This is the actual global variable
 I2SClass i2s;
 #define EXAMPLE_SAMPLE_RATE 8000
-#define EXAMPLE_VOICE_VOLUME 80
+#define EXAMPLE_VOICE_VOLUME 100
 
-volatile bool play_alarm = false; // Set to true to start, false to stop
+volatile bool play_alarm = true; // Set to true to start, false to stop
 
 /* ===== WiFi Settings ===== */
 const char* ssid = "TANTRA";
@@ -198,6 +199,103 @@ void handle_timer_buttons(lv_event_t * e) {
     }
 }
 
+// Add a global pointer for the codec handle if you haven't yet
+extern es8311_handle_t es_handle; 
+
+void handle_settings_events(lv_event_t * e) {
+    lv_obj_t * target = lv_event_get_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+
+    // --- 1. Sliders (Brightness & Volume) ---
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        if (target == ui_Slider1) { 
+            int val = lv_slider_get_value(ui_Slider1);
+            gfx->setBrightness(map(val, 0, 100, 0, 255));
+            lv_label_set_text_fmt(ui_Label30, "%d", val);
+        }
+        else if (target == ui_Slider2) { 
+            int val = lv_slider_get_value(ui_Slider2);
+            // Use the global es_handle we defined earlier
+            if(es_handle) es8311_voice_volume_set(es_handle, val, NULL);
+            lv_label_set_text_fmt(ui_Label31, "%d", val);
+        }
+    }
+
+    // --- 2. Keyboard Control (The "Enter" and "X" keys) ---
+    if (target == ui_Keyboard) {
+        // LV_EVENT_READY is the Checkmark (Enter), LV_EVENT_CANCEL is the X
+        if (code == LV_EVENT_READY || code == LV_EVENT_CANCEL) {
+            lv_obj_add_flag(ui_Keyboard, LV_OBJ_FLAG_HIDDEN);
+            // Unfocus the text area so the cursor stops blinking
+            lv_obj_t * ta = lv_keyboard_get_textarea(ui_Keyboard);
+            if(ta) lv_obj_clear_state(ta, LV_STATE_FOCUSED);
+        }
+    }
+
+    // --- 3. Button Clicks (WiFi Popup) ---
+    if(code == LV_EVENT_CLICKED) {
+        if (target == ui_WifiButton) {
+            lv_obj_clear_flag(ui_WifiConnectPopup, LV_OBJ_FLAG_HIDDEN);
+        }
+        else if (target == ui_Cancel) {
+            lv_obj_add_flag(ui_WifiConnectPopup, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(ui_Keyboard, LV_OBJ_FLAG_HIDDEN); // Close keyboard too
+        }
+        else if (target == ui_Connect) {
+            const char * ssid_target = lv_textarea_get_text(ui_NetworkBox);
+            const char * pass_target = lv_textarea_get_text(ui_PasswordBox);
+            
+            lv_label_set_text(ui_Label36, "Status: Connecting...");
+            WiFi.begin(ssid_target, pass_target);
+            
+            // Hide keyboard automatically when starting connection
+            lv_obj_add_flag(ui_Keyboard, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+
+    // --- 4. Focus Handling ---
+    if(code == LV_EVENT_FOCUSED) {
+        if(target == ui_NetworkBox || target == ui_PasswordBox) {
+            lv_keyboard_set_textarea(ui_Keyboard, target);
+            lv_obj_clear_flag(ui_Keyboard, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+    if (target == ui_DarkMode && code == LV_EVENT_CLICKED) {
+        // If it's a button, we toggle a static variable
+        static bool is_dark = true;
+        is_dark = !is_dark;
+        
+        apply_dark_mode(is_dark);
+        
+        // Optional: Change the button icon color to show state
+        lv_obj_set_style_img_recolor(ui_Label26, is_dark ? lv_color_hex(0x2095F6) : lv_color_hex(0xFFFFFF), 0);
+    }
+}
+
+void setup_settings_controls() {
+    // Hide popup and keyboard by default
+    lv_obj_add_flag(ui_WifiConnectPopup, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(ui_Keyboard, LV_OBJ_FLAG_HIDDEN);
+
+    // Attach Brightness & Volume Sliders
+    lv_obj_add_event_cb(ui_Slider1, handle_settings_events, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_add_event_cb(ui_Slider2, handle_settings_events, LV_EVENT_VALUE_CHANGED, NULL);
+
+    // Attach Buttons
+    lv_obj_add_event_cb(ui_WifiButton, handle_settings_events, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(ui_Cancel, handle_settings_events, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(ui_Connect, handle_settings_events, LV_EVENT_CLICKED, NULL);
+
+    // Attach TextBoxes for Keyboard
+    lv_obj_add_event_cb(ui_NetworkBox, handle_settings_events, LV_EVENT_FOCUSED, NULL);
+    lv_obj_add_event_cb(ui_PasswordBox, handle_settings_events, LV_EVENT_FOCUSED, NULL);
+    lv_obj_add_event_cb(ui_Keyboard, handle_settings_events, LV_EVENT_ALL, NULL);
+    // Set initial Slider positions to match current hardware
+    lv_slider_set_value(ui_Slider1, 100, LV_ANIM_OFF); // 80% Brightness
+    lv_slider_set_value(ui_Slider2, 100, LV_ANIM_OFF); // 90% Volume
+    lv_obj_add_event_cb(ui_DarkMode, handle_settings_events, LV_EVENT_CLICKED, NULL);
+}
+
 void start_timer_cb(lv_event_t * e) {
     if (timer_seconds > 0) {
         timer_running = true;
@@ -222,7 +320,8 @@ void pause_timer_cb(lv_event_t * e) {
 }
 
 esp_err_t es8311_codec_init(void) {
-  es8311_handle_t es_handle = es8311_create(0, ES8311_ADDRRES_0);
+  es_handle = es8311_create(0, ES8311_ADDRRES_0); // This saves it to the global variable
+  if (!es_handle) return ESP_FAIL;
   const es8311_clock_config_t es_clk = {
     .mclk_from_mclk_pin = true,
     .mclk_frequency = EXAMPLE_SAMPLE_RATE * 256,
@@ -234,33 +333,88 @@ esp_err_t es8311_codec_init(void) {
 }
 
 void audio_task(void *param) {
+  // 1. Set I2S Pins first
   i2s.setPins(BCLKPIN, WSPIN, DIPIN, DOPIN, MCLKPIN);
-  i2s.begin(I2S_MODE_STD, EXAMPLE_SAMPLE_RATE, I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO, I2S_STD_SLOT_BOTH);
-  Wire.begin(15, 14); // Codec I2C
-  es8311_codec_init();
+  
+  // 2. Start I2S
+  if (!i2s.begin(I2S_MODE_STD, EXAMPLE_SAMPLE_RATE, I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO, I2S_STD_SLOT_BOTH)) {
+    Serial.println("I2S init failed!");
+    vTaskDelete(NULL);
+  }
+
+  // 3. Initialize Codec (Using the ALREADY STARTED Wire bus from setup)
+  // We do NOT call Wire.begin again here.
+  if (es8311_codec_init() != ESP_OK) {
+    Serial.println("ES8311 init failed!");
+    vTaskDelete(NULL);
+  }
+  
+  Serial.println("Audio Task: Codec and I2S Ready.");
 
   while (1) {
+    // Check if we actually want to play (using your play_alarm flag)
     if (play_alarm) {
-      // This will loop the sound as long as play_alarm is true
       i2s.write((uint8_t *)canon_pcm, canon_pcm_len);
     } else {
-      vTaskDelay(100 / portTICK_PERIOD_MS); // Idle wait
+      vTaskDelay(pdMS_TO_TICKS(100)); // Sleep when not playing
     }
-    vTaskDelay(1); 
+    vTaskDelay(1); // Small yield
   }
 }
+
+void apply_dark_mode(bool active) {
+    lv_color_t backgrounds = active ? lv_color_hex(0xFFB900) : lv_color_hex(0x000000);
+    lv_color_t text_color = active ? lv_color_hex(0x000000) : lv_color_hex(0xFFB900);
+    lv_color_t datesubtitle = active ? lv_color_hex(0x000000) : lv_color_hex(0xFFB900);
+
+    if (ui_Screen1) lv_obj_set_style_bg_color(ui_Screen1, backgrounds, LV_PART_MAIN | LV_STATE_DEFAULT);
+    if (ui_Analog) lv_obj_set_style_bg_color(ui_Analog, backgrounds, LV_PART_MAIN | LV_STATE_DEFAULT);
+    if (ui_Timer) lv_obj_set_style_bg_color(ui_Timer, backgrounds, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    if (ui_Label2) lv_obj_set_style_text_color(ui_Label2, datesubtitle, 0);
+
+
+    lv_obj_t * labels[] = {
+        ui_Label3, ui_Label4, ui_Label5, ui_Label6, ui_Label7, 
+        ui_Label8, ui_Label9, ui_Label10, ui_Label11, ui_Label12, 
+        ui_Label13, ui_Label15
+    };
+
+    for (int i = 0; i < 12; i++) {
+        if (labels[i] == NULL) continue;
+
+        // Get the text to check if it's "2" or "5"
+        const char * text = lv_label_get_text(labels[i]);
+        
+        if (strcmp(text, "2") != 0 && strcmp(text, "5") != 0) {
+            lv_obj_set_style_text_color(labels[i], text_color, 0);
+        } 
+    }
+
+
+    Serial.printf("Dark Mode %s\n", active ? "Enabled" : "Disabled");
+}
+
+
+
+
+
 
 /* ===== SETUP ===== */
 void setup() {
   Serial.begin(115200);
   delay(1000); // Give serial time to stabilize
   buf = (lv_color_t *)heap_caps_malloc(LCD_WIDTH * LCD_HEIGHT * sizeof(lv_color_t), MALLOC_CAP_SPIRAM);
-  
   // Check if allocation worked
   if (buf == NULL) {
       Serial.println("PSRAM Allocation Failed! System will freeze.");
   }
   // 1. Display Hardware Init (Get the screen on early)
+
+  Wire.begin(15, 14);
+  pinMode(10, OUTPUT); // GPIO 10 is the standard PA_EN for this board
+  digitalWrite(10, HIGH);
+
   gfx->begin();
   gfx->setBrightness(255);
 
@@ -280,7 +434,6 @@ void setup() {
   lv_disp_set_rotation(NULL, LV_DISP_ROT_90);
 
   // 4. Input (Touch) Init
-  Wire.begin(IIC_SDA, IIC_SCL);
   pinMode(TP_INT, INPUT_PULLUP);
   digitalWrite(TP_RESET, LOW); delay(30); digitalWrite(TP_RESET, HIGH); delay(50);
   touch.setPins(TP_RESET, TP_INT);
@@ -305,6 +458,22 @@ void setup() {
   // 7. Custom Overlays & Events
   setupRegularAnalog();
   setupPokeBall();
+
+// --- ADD THIS TO SETUP ---
+  setup_settings_controls(); // Initialize flags and default values
+
+  // Link Settings Sliders
+  lv_obj_add_event_cb(ui_Slider1, handle_settings_events, LV_EVENT_VALUE_CHANGED, NULL);
+  lv_obj_add_event_cb(ui_Slider2, handle_settings_events, LV_EVENT_VALUE_CHANGED, NULL);
+
+  // Link WiFi Popup & Connect Buttons
+  lv_obj_add_event_cb(ui_WifiButton, handle_settings_events, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(ui_Cancel, handle_settings_events, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(ui_Connect, handle_settings_events, LV_EVENT_CLICKED, NULL);
+
+  // Link TextBoxes to Keyboard
+  lv_obj_add_event_cb(ui_NetworkBox, handle_settings_events, LV_EVENT_FOCUSED, NULL);
+  lv_obj_add_event_cb(ui_PasswordBox, handle_settings_events, LV_EVENT_FOCUSED, NULL);
 
   lv_obj_add_event_cb(ui_Button5, handle_timer_buttons, LV_EVENT_ALL, NULL);
   lv_obj_add_event_cb(ui_Button1, handle_timer_buttons, LV_EVENT_ALL, NULL);
@@ -365,4 +534,15 @@ void loop() {
       }
   }
   delay(5);
+  static unsigned long last_wifi_check = 0;
+  if (millis() - last_wifi_check > 10000) {
+      last_wifi_check = millis();
+      if (lv_obj_is_visible(ui_WifiConnectPopup)) {
+          if (WiFi.status() == WL_CONNECTED) {
+              lv_label_set_text(ui_Label36, "Status: Connected!");
+          } else if (WiFi.status() == WL_CONNECT_FAILED) {
+              lv_label_set_text(ui_Label36, "Status: Failed");
+          }
+      }
+  }
 }

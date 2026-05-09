@@ -16,8 +16,10 @@ SET(SOURCES ui_comp_container1.c
     ui_img_allyellow_png.c
     ui_img_pokeoutfits_png.c
     fonts/ui_font_Font1.c
-    fonts/ui_font_Pokemon.c
+    fonts/ui_font_Icons.c
+    fonts/ui_font_IconsLarge.c
     fonts/ui_font_Poke30.c
-    fonts/ui_font_Poke90.c)
+    fonts/ui_font_Poke90.c
+    fonts/ui_font_Pokemon.c)
 
 add_library(ui ${SOURCES})
