@@ -5,7 +5,7 @@
 
 #include "ui.h"
 
-lv_obj_t *ui_Settings = NULL;lv_obj_t *ui_WifiButton = NULL;lv_obj_t *ui_Label24 = NULL;lv_obj_t *ui_DarkMode = NULL;lv_obj_t *ui_Label26 = NULL;lv_obj_t *ui_Brightness = NULL;lv_obj_t *ui_Slider1 = NULL;lv_obj_t *ui_Label29 = NULL;lv_obj_t *ui_Label30 = NULL;lv_obj_t *ui_Volume = NULL;lv_obj_t *ui_Slider2 = NULL;lv_obj_t *ui_Label28 = NULL;lv_obj_t *ui_Label31 = NULL;lv_obj_t *ui_Misc = NULL;lv_obj_t *ui_Switch1 = NULL;lv_obj_t *ui_Switch2 = NULL;lv_obj_t *ui_Label32 = NULL;lv_obj_t *ui_Label33 = NULL;lv_obj_t *ui_Button8 = NULL;lv_obj_t *ui_Label34 = NULL;lv_obj_t *ui_WifiConnectPopup = NULL;lv_obj_t *ui_Panel8 = NULL;lv_obj_t *ui_Label35 = NULL;lv_obj_t *ui_NetworkBox = NULL;lv_obj_t *ui_Label36 = NULL;lv_obj_t *ui_PasswordBox = NULL;lv_obj_t *ui_Connect = NULL;lv_obj_t *ui_Label37 = NULL;lv_obj_t *ui_Cancel = NULL;lv_obj_t *ui_Label38 = NULL;lv_obj_t *ui_Keyboard = NULL;
+lv_obj_t *ui_Settings = NULL;lv_obj_t *ui_WifiButton = NULL;lv_obj_t *ui_Label24 = NULL;lv_obj_t *ui_DarkMode = NULL;lv_obj_t *ui_Label26 = NULL;lv_obj_t *ui_Brightness = NULL;lv_obj_t *ui_Slider1 = NULL;lv_obj_t *ui_Label29 = NULL;lv_obj_t *ui_Label30 = NULL;lv_obj_t *ui_Volume = NULL;lv_obj_t *ui_Slider2 = NULL;lv_obj_t *ui_Label28 = NULL;lv_obj_t *ui_Label31 = NULL;lv_obj_t *ui_Misc = NULL;lv_obj_t *ui_Switch1 = NULL;lv_obj_t *ui_Switch2 = NULL;lv_obj_t *ui_Label32 = NULL;lv_obj_t *ui_Label33 = NULL;lv_obj_t *ui_Info = NULL;lv_obj_t *ui_Label34 = NULL;lv_obj_t *ui_WifiConnectPopup = NULL;lv_obj_t *ui_Panel8 = NULL;lv_obj_t *ui_Label35 = NULL;lv_obj_t *ui_NetworkBox = NULL;lv_obj_t *ui_Label36 = NULL;lv_obj_t *ui_PasswordBox = NULL;lv_obj_t *ui_Connect = NULL;lv_obj_t *ui_Label37 = NULL;lv_obj_t *ui_Cancel = NULL;lv_obj_t *ui_Label38 = NULL;lv_obj_t *ui_Keyboard = NULL;lv_obj_t *ui_Container1 = NULL;lv_obj_t *ui_Panel6 = NULL;lv_obj_t *ui_Label39 = NULL;lv_obj_t *ui_Label40 = NULL;lv_obj_t *ui_InfoExit = NULL;lv_obj_t *ui_Label41 = NULL;
 // event funtions
 void ui_event_Settings( lv_event_t * e) {
     lv_event_code_t event_code = lv_event_get_code(e);
@@ -217,19 +217,19 @@ lv_obj_set_style_text_color(ui_Label33, lv_color_hex(0xFFFFFF), LV_PART_MAIN | L
 lv_obj_set_style_text_opa(ui_Label33, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_text_font(ui_Label33, &lv_font_montserrat_12, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Button8 = lv_btn_create(ui_Misc);
-lv_obj_set_width( ui_Button8, 31);
-lv_obj_set_height( ui_Button8, 31);
-lv_obj_set_x( ui_Button8, 100 );
-lv_obj_set_y( ui_Button8, 0 );
-lv_obj_set_align( ui_Button8, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button8, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button8, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_radius(ui_Button8, 100, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_bg_color(ui_Button8, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Button8, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_Info = lv_btn_create(ui_Misc);
+lv_obj_set_width( ui_Info, 31);
+lv_obj_set_height( ui_Info, 31);
+lv_obj_set_x( ui_Info, 100 );
+lv_obj_set_y( ui_Info, 0 );
+lv_obj_set_align( ui_Info, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_Info, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_Info, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_radius(ui_Info, 100, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_bg_color(ui_Info, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_Info, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Label34 = lv_label_create(ui_Button8);
+ui_Label34 = lv_label_create(ui_Info);
 lv_obj_set_width( ui_Label34, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label34, LV_SIZE_CONTENT);   /// 1
 lv_obj_set_align( ui_Label34, LV_ALIGN_CENTER );
@@ -350,6 +350,63 @@ lv_obj_set_y( ui_Keyboard, 9 );
 lv_obj_set_align( ui_Keyboard, LV_ALIGN_CENTER );
 lv_obj_add_flag( ui_Keyboard, LV_OBJ_FLAG_HIDDEN );   /// Flags
 
+ui_Container1 = lv_obj_create(ui_Settings);
+lv_obj_remove_style_all(ui_Container1);
+lv_obj_set_width( ui_Container1, 549);
+lv_obj_set_height( ui_Container1, 510);
+lv_obj_set_x( ui_Container1, 0 );
+lv_obj_set_y( ui_Container1, -11 );
+lv_obj_set_align( ui_Container1, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_Container1, LV_OBJ_FLAG_HIDDEN );   /// Flags
+lv_obj_clear_flag( ui_Container1, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+
+ui_Panel6 = lv_obj_create(ui_Container1);
+lv_obj_set_width( ui_Panel6, 561);
+lv_obj_set_height( ui_Panel6, 540);
+lv_obj_set_x( ui_Panel6, 0 );
+lv_obj_set_y( ui_Panel6, 27 );
+lv_obj_set_align( ui_Panel6, LV_ALIGN_CENTER );
+lv_obj_clear_flag( ui_Panel6, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+ui_object_set_themeable_style_property(ui_Panel6, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Default_Yellow);
+ui_object_set_themeable_style_property(ui_Panel6, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Default_Yellow);
+lv_obj_set_style_border_color(ui_Panel6, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_border_opa(ui_Panel6, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_Label39 = lv_label_create(ui_Container1);
+lv_obj_set_width( ui_Label39, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Label39, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_Label39, 0 );
+lv_obj_set_y( ui_Label39, -75 );
+lv_obj_set_align( ui_Label39, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Label39,"PikaOS");
+lv_obj_set_style_text_font(ui_Label39, &ui_font_Poke30, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_Label40 = lv_label_create(ui_Container1);
+lv_obj_set_width( ui_Label40, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Label40, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_Label40, 0 );
+lv_obj_set_y( ui_Label40, 17 );
+lv_obj_set_align( ui_Label40, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Label40,"V1.0\nDeveloped by\nNivaan Kaushal\n\nMay 15th, 2026");
+lv_obj_set_style_text_align(ui_Label40, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_InfoExit = lv_btn_create(ui_Container1);
+lv_obj_set_width( ui_InfoExit, 262);
+lv_obj_set_height( ui_InfoExit, 50);
+lv_obj_set_x( ui_InfoExit, 0 );
+lv_obj_set_y( ui_InfoExit, 132 );
+lv_obj_set_align( ui_InfoExit, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_InfoExit, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_InfoExit, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_InfoExit, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_InfoExit, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_Label41 = lv_label_create(ui_InfoExit);
+lv_obj_set_width( ui_Label41, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Label41, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_align( ui_Label41, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Label41,"Exit");
+
 lv_obj_add_event_cb(ui_NetworkBox, ui_event_NetworkBox, LV_EVENT_ALL, NULL);
 lv_obj_add_event_cb(ui_Settings, ui_event_Settings, LV_EVENT_ALL, NULL);
 
@@ -378,7 +435,7 @@ ui_Switch1= NULL;
 ui_Switch2= NULL;
 ui_Label32= NULL;
 ui_Label33= NULL;
-ui_Button8= NULL;
+ui_Info= NULL;
 ui_Label34= NULL;
 ui_WifiConnectPopup= NULL;
 ui_Panel8= NULL;
@@ -391,5 +448,11 @@ ui_Label37= NULL;
 ui_Cancel= NULL;
 ui_Label38= NULL;
 ui_Keyboard= NULL;
+ui_Container1= NULL;
+ui_Panel6= NULL;
+ui_Label39= NULL;
+ui_Label40= NULL;
+ui_InfoExit= NULL;
+ui_Label41= NULL;
 
 }

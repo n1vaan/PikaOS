@@ -270,6 +270,20 @@ void handle_settings_events(lv_event_t * e) {
         // Optional: Change the button icon color to show state
         lv_obj_set_style_img_recolor(ui_Label26, is_dark ? lv_color_hex(0x2095F6) : lv_color_hex(0xFFFFFF), 0);
     }
+    // Inside handle_settings_events(lv_event_t * e)
+    if(code == LV_EVENT_CLICKED) {
+        // ... your existing WiFi buttons ...
+
+        // 1. Show the Info Page
+        if (target == ui_Info) {
+            lv_obj_clear_flag(ui_Container1, LV_OBJ_FLAG_HIDDEN);
+        }
+        
+        // 2. Hide the Info Page
+        else if (target == ui_InfoExit) {
+            lv_obj_add_flag(ui_Container1, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
 }
 
 void setup_settings_controls() {
@@ -294,6 +308,8 @@ void setup_settings_controls() {
     lv_slider_set_value(ui_Slider1, 100, LV_ANIM_OFF); // 80% Brightness
     lv_slider_set_value(ui_Slider2, 100, LV_ANIM_OFF); // 90% Volume
     lv_obj_add_event_cb(ui_DarkMode, handle_settings_events, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(ui_Info, handle_settings_events, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(ui_InfoExit, handle_settings_events, LV_EVENT_CLICKED, NULL);
 }
 
 void start_timer_cb(lv_event_t * e) {

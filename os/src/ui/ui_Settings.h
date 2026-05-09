@@ -32,7 +32,7 @@ extern lv_obj_t *ui_Switch1;
 extern lv_obj_t *ui_Switch2;
 extern lv_obj_t *ui_Label32;
 extern lv_obj_t *ui_Label33;
-extern lv_obj_t *ui_Button8;
+extern lv_obj_t *ui_Info;
 extern lv_obj_t *ui_Label34;
 extern lv_obj_t *ui_WifiConnectPopup;
 extern lv_obj_t *ui_Panel8;
@@ -46,6 +46,12 @@ extern lv_obj_t *ui_Label37;
 extern lv_obj_t *ui_Cancel;
 extern lv_obj_t *ui_Label38;
 extern lv_obj_t *ui_Keyboard;
+extern lv_obj_t *ui_Container1;
+extern lv_obj_t *ui_Panel6;
+extern lv_obj_t *ui_Label39;
+extern lv_obj_t *ui_Label40;
+extern lv_obj_t *ui_InfoExit;
+extern lv_obj_t *ui_Label41;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus
