@@ -1,5 +1,7 @@
 # PikaOS
 
+![PikaIMG](img/pikaRender.PNG)
+
 A Pokémon-themed firmware for the **Waveshare ESP32-S3-Touch-AMOLED-1.75** — a 466×466 round AMOLED watch board with capacitive touch, an I²S audio codec, and a small speaker. Multiple watch faces, a timer, a stopwatch, a pet screen, settings, and hourly Pikachu chimes.
 
 Built on Arduino-ESP32 + LVGL 8.3 + SquareLine-generated UI.
