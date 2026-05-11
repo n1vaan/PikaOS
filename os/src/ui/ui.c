@@ -40,6 +40,9 @@ ui_Timer_screen_init();
 ui_Settings_screen_init();
 ui_Photo_screen_init();
 ui_Photo2_screen_init();
+ui_StopWatch_screen_init();
+// ui_Alarm_screen_init();  // alarm screen removed (UI broken; .c/.h kept for compile)
+ui_Pet_screen_init();
 ui____initial_actions0 = lv_obj_create(NULL);
 lv_disp_load_scr( ui_PokeBallAnalog);
 }
@@ -52,4 +55,7 @@ ui_Timer_screen_destroy();
 ui_Settings_screen_destroy();
 ui_Photo_screen_destroy();
 ui_Photo2_screen_destroy();
+ui_StopWatch_screen_destroy();
+ui_Alarm_screen_destroy();
+ui_Pet_screen_destroy();
 }

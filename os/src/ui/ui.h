@@ -37,6 +37,9 @@ extern "C" {
 #include "ui_Settings.h"
 #include "ui_Photo.h"
 #include "ui_Photo2.h"
+#include "ui_StopWatch.h"
+#include "ui_Alarm.h"
+#include "ui_Pet.h"
 
 ///////////////////// VARIABLES ////////////////////
 
