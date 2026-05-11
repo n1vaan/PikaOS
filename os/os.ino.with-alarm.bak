@@ -11,19 +11,13 @@
 #include "esp_check.h"
 #include "es8311.h"
 #include "canon.h"
-#include "pikachu.h"
-#include "click.h"
 
 es8311_handle_t es_handle = NULL; // This is the actual global variable
 I2SClass i2s;
-#define EXAMPLE_SAMPLE_RATE 16000
-#define EXAMPLE_VOICE_VOLUME 80   // codec max we'll ever set; slider 100 -> this value
+#define EXAMPLE_SAMPLE_RATE 8000
+#define EXAMPLE_VOICE_VOLUME 100
 
-volatile bool play_alarm = false; // Set to true to start, false to stop. Off at boot — fires when timer hits 0.
-volatile bool play_chime = false;     // One-shot pikachu chime; cleared automatically after playing.
-volatile int chime_clip_idx = 0;      // which pikachu_clips[] entry to play
-bool chimes_enabled = false;          // toggled by ui_Switch1 ("Chimes")
-volatile bool play_click = false;     // One-shot UI click; cleared automatically.
+volatile bool play_alarm = true; // Set to true to start, false to stop
 
 /* ===== WiFi Settings ===== */
 const char* ssid = "TANTRA";
@@ -63,60 +57,6 @@ int timer_seconds = 1500; // Default 25:00 (25 * 60)
 bool timer_running = false;
 unsigned long last_timer_update = 0;
 
-/* ===== StopWatch State ===== */
-unsigned long stopwatch_accum = 0;       // accumulated ms while paused
-unsigned long stopwatch_start_ms = 0;    // millis() when last started
-bool stopwatch_running = false;
-
-/* ===== Theme / Auto-dim State ===== */
-bool is_dark = true;            // matches the previous static initial value
-bool auto_dim_enabled = false;  // toggled by ui_Switch2 ("Dim")
-// Dark mode active hours: [DARK_START_HOUR, DARK_END_HOUR) -- 8 PM to 6 AM
-#define DARK_START_HOUR 20
-#define DARK_END_HOUR    6
-
-/* ===== Pet Screen ===== */
-void pet_screen_clicked(lv_event_t * e) {
-    if (PIKACHU_CLIP_COUNT == 0) return;
-    chime_clip_idx = random(PIKACHU_CLIP_COUNT);
-    play_chime = true;
-}
-
-void update_stopwatch_label() {
-    unsigned long elapsed = stopwatch_accum;
-    if (stopwatch_running) elapsed += millis() - stopwatch_start_ms;
-    int hours = elapsed / 3600000UL;
-    int minutes = (elapsed / 60000UL) % 60;
-    int seconds = (elapsed / 1000UL) % 60;
-    char buf[16];
-    snprintf(buf, sizeof(buf), "%02d:%02d:%02d", hours, minutes, seconds);
-    if (ui_Time) lv_label_set_text(ui_Time, buf);
-}
-
-void update_pauseplay_icon() {
-    if (ui_Label42) lv_label_set_text(ui_Label42, stopwatch_running ? "g" : "h");
-}
-
-void handle_stopwatch_events(lv_event_t * e) {
-    lv_obj_t * target = lv_event_get_target(e);
-    if (target == ui_PausePlay) {
-        if (stopwatch_running) {
-            stopwatch_accum += millis() - stopwatch_start_ms;
-            stopwatch_running = false;
-        } else {
-            stopwatch_start_ms = millis();
-            stopwatch_running = true;
-        }
-        update_stopwatch_label();
-        update_pauseplay_icon();
-    } else if (target == ui_Reset) {
-        stopwatch_running = false;
-        stopwatch_accum = 0;
-        update_stopwatch_label();
-        update_pauseplay_icon();
-    }
-}
-
 // Helper to format the label (MM:SS)
 void update_timer_label() {
     int minutes = timer_seconds / 60;
@@ -126,18 +66,6 @@ void update_timer_label() {
     if (ui_Label14) lv_label_set_text(ui_Label14, buf);
 }
 /* ===== Touch Callbacks ===== */
-// LVGL input feedback — fires for every event from the touch device.
-// We arm play_click on LV_EVENT_CLICKED so the audio task plays the click pcm.
-void my_indev_feedback(lv_indev_drv_t *drv, uint8_t event_code) {
-    if (event_code == LV_EVENT_CLICKED) {
-        lv_obj_t * obj = lv_indev_get_obj_act();
-        // Only chirp on clickable widgets (avoid clicks on bare screen backgrounds).
-        if (obj && lv_obj_has_flag(obj, LV_OBJ_FLAG_CLICKABLE)) {
-            play_click = true;
-        }
-    }
-}
-
 void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data) {
   uint8_t touched = touch.getPoint(tx, ty, touch.getSupportTouchPoint());
   if (touched > 0) {
@@ -230,18 +158,16 @@ void updateAllLogic(const struct tm& ti) {
   }
   else if (scr == ui_Screen1) {
     char tB[16], dB[40];
-    int h12 = ti.tm_hour % 12; if (h12 == 0) h12 = 12;
-    snprintf(tB, sizeof(tB), "%d:%02d", h12, ti.tm_min);
+    snprintf(tB, sizeof(tB), "%02d:%02d", ti.tm_hour, ti.tm_min);
     strftime(dB, sizeof(dB), "%A, %B %d, %Y", &ti);
     if (ui_Label1) lv_label_set_text(ui_Label1, tB);
     if (ui_Label2) lv_label_set_text(ui_Label2, dB);
   }
-
+  
   /* --- NEW PHOTO SCREEN LOGIC --- */
   else if (scr == ui_Photo || scr == ui_Photo2) {
     char tB[16], dB[40];
-    int h12 = ti.tm_hour % 12; if (h12 == 0) h12 = 12;
-    snprintf(tB, sizeof(tB), "%d:%02d", h12, ti.tm_min);
+    snprintf(tB, sizeof(tB), "%02d:%02d", ti.tm_hour, ti.tm_min);
     
     // Update Photo 1 (Allyellow)
     if (ui_Label25) lv_label_set_text(ui_Label25, tB);
@@ -252,9 +178,6 @@ void updateAllLogic(const struct tm& ti) {
     // Update the Date on Photo 2
     strftime(dB, sizeof(dB), "%A, %B %d, %Y", &ti);
     if (ui_Label21) lv_label_set_text(ui_Label21, dB);
-  }
-  else if (scr == ui_StopWatch) {
-    update_stopwatch_label();
   }
 }
 void handle_timer_buttons(lv_event_t * e) {
@@ -290,11 +213,10 @@ void handle_settings_events(lv_event_t * e) {
             gfx->setBrightness(map(val, 0, 100, 0, 255));
             lv_label_set_text_fmt(ui_Label30, "%d", val);
         }
-        else if (target == ui_Slider2) {
+        else if (target == ui_Slider2) { 
             int val = lv_slider_get_value(ui_Slider2);
-            // Slider max (100) maps to codec volume 80 — full codec volume is painfully loud.
-            int codec_vol = map(val, 0, 100, 0, 80);
-            if(es_handle) es8311_voice_volume_set(es_handle, codec_vol, NULL);
+            // Use the global es_handle we defined earlier
+            if(es_handle) es8311_voice_volume_set(es_handle, val, NULL);
             lv_label_set_text_fmt(ui_Label31, "%d", val);
         }
     }
@@ -339,17 +261,14 @@ void handle_settings_events(lv_event_t * e) {
         }
     }
     if (target == ui_DarkMode && code == LV_EVENT_CLICKED) {
+        // If it's a button, we toggle a static variable
+        static bool is_dark = true;
         is_dark = !is_dark;
+        
         apply_dark_mode(is_dark);
+        
+        // Optional: Change the button icon color to show state
         lv_obj_set_style_img_recolor(ui_Label26, is_dark ? lv_color_hex(0x2095F6) : lv_color_hex(0xFFFFFF), 0);
-    }
-    if (target == ui_Switch2 && code == LV_EVENT_VALUE_CHANGED) {
-        auto_dim_enabled = lv_obj_has_state(ui_Switch2, LV_STATE_CHECKED);
-        Serial.printf("Auto-dim %s\n", auto_dim_enabled ? "ON" : "OFF");
-    }
-    if (target == ui_Switch1 && code == LV_EVENT_VALUE_CHANGED) {
-        chimes_enabled = lv_obj_has_state(ui_Switch1, LV_STATE_CHECKED);
-        Serial.printf("Chimes %s\n", chimes_enabled ? "ON" : "OFF");
     }
     // Inside handle_settings_events(lv_event_t * e)
     if(code == LV_EVENT_CLICKED) {
@@ -389,8 +308,6 @@ void setup_settings_controls() {
     lv_slider_set_value(ui_Slider1, 100, LV_ANIM_OFF); // 80% Brightness
     lv_slider_set_value(ui_Slider2, 100, LV_ANIM_OFF); // 90% Volume
     lv_obj_add_event_cb(ui_DarkMode, handle_settings_events, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_event_cb(ui_Switch1, handle_settings_events, LV_EVENT_VALUE_CHANGED, NULL);
-    lv_obj_add_event_cb(ui_Switch2, handle_settings_events, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(ui_Info, handle_settings_events, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(ui_InfoExit, handle_settings_events, LV_EVENT_CLICKED, NULL);
 }
@@ -419,21 +336,15 @@ void pause_timer_cb(lv_event_t * e) {
 }
 
 esp_err_t es8311_codec_init(void) {
-  es_handle = es8311_create(0, ES8311_ADDRRES_0);
-  ESP_RETURN_ON_FALSE(es_handle, ESP_FAIL, "ES8311", "create failed");
-
+  es_handle = es8311_create(0, ES8311_ADDRRES_0); // This saves it to the global variable
+  if (!es_handle) return ESP_FAIL;
   const es8311_clock_config_t es_clk = {
-    .mclk_inverted = false,
-    .sclk_inverted = false,
     .mclk_from_mclk_pin = true,
     .mclk_frequency = EXAMPLE_SAMPLE_RATE * 256,
     .sample_frequency = EXAMPLE_SAMPLE_RATE
   };
-
-  ESP_ERROR_CHECK(es8311_init(es_handle, &es_clk, ES8311_RESOLUTION_16, ES8311_RESOLUTION_16));
-  ESP_ERROR_CHECK(es8311_sample_frequency_config(es_handle, es_clk.mclk_frequency, es_clk.sample_frequency));
-  ESP_ERROR_CHECK(es8311_microphone_config(es_handle, false));
-  ESP_ERROR_CHECK(es8311_voice_volume_set(es_handle, EXAMPLE_VOICE_VOLUME, NULL));
+  es8311_init(es_handle, &es_clk, ES8311_RESOLUTION_16, ES8311_RESOLUTION_16);
+  es8311_voice_volume_set(es_handle, EXAMPLE_VOICE_VOLUME, NULL);
   return ESP_OK;
 }
 
@@ -442,7 +353,7 @@ void audio_task(void *param) {
   i2s.setPins(BCLKPIN, WSPIN, DIPIN, DOPIN, MCLKPIN);
   
   // 2. Start I2S
-  if (!i2s.begin(I2S_MODE_STD, EXAMPLE_SAMPLE_RATE, I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO, I2S_STD_SLOT_BOTH)) {
+  if (!i2s.begin(I2S_MODE_STD, EXAMPLE_SAMPLE_RATE, I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO, I2S_STD_SLOT_BOTH)) {
     Serial.println("I2S init failed!");
     vTaskDelete(NULL);
   }
@@ -457,20 +368,13 @@ void audio_task(void *param) {
   Serial.println("Audio Task: Codec and I2S Ready.");
 
   while (1) {
-    if (play_click) {
-      i2s.write((uint8_t *)click_pcm, click_pcm_len);
-      play_click = false; // one-shot
-    } else if (play_chime) {
-      int idx = chime_clip_idx;
-      if (idx < 0 || idx >= (int)PIKACHU_CLIP_COUNT) idx = 0;
-      i2s.write((uint8_t *)pikachu_clips[idx], pikachu_clip_lens[idx]);
-      play_chime = false; // one-shot
-    } else if (play_alarm) {
+    // Check if we actually want to play (using your play_alarm flag)
+    if (play_alarm) {
       i2s.write((uint8_t *)canon_pcm, canon_pcm_len);
     } else {
-      vTaskDelay(pdMS_TO_TICKS(100));
+      vTaskDelay(pdMS_TO_TICKS(100)); // Sleep when not playing
     }
-    vTaskDelay(1);
+    vTaskDelay(1); // Small yield
   }
 }
 
@@ -482,7 +386,6 @@ void apply_dark_mode(bool active) {
     if (ui_Screen1) lv_obj_set_style_bg_color(ui_Screen1, backgrounds, LV_PART_MAIN | LV_STATE_DEFAULT);
     if (ui_Analog) lv_obj_set_style_bg_color(ui_Analog, backgrounds, LV_PART_MAIN | LV_STATE_DEFAULT);
     if (ui_Timer) lv_obj_set_style_bg_color(ui_Timer, backgrounds, LV_PART_MAIN | LV_STATE_DEFAULT);
-    if (ui_StopWatch) lv_obj_set_style_bg_color(ui_StopWatch, backgrounds, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     if (ui_Label2) lv_obj_set_style_text_color(ui_Label2, datesubtitle, 0);
 
@@ -517,7 +420,6 @@ void apply_dark_mode(bool active) {
 void setup() {
   Serial.begin(115200);
   delay(1000); // Give serial time to stabilize
-  randomSeed(esp_random()); // hardware RNG so random() varies across boots
   buf = (lv_color_t *)heap_caps_malloc(LCD_WIDTH * LCD_HEIGHT * sizeof(lv_color_t), MALLOC_CAP_SPIRAM);
   // Check if allocation worked
   if (buf == NULL) {
@@ -526,8 +428,8 @@ void setup() {
   // 1. Display Hardware Init (Get the screen on early)
 
   Wire.begin(15, 14);
-  pinMode(PA, OUTPUT); // Speaker amp enable (GPIO 46 — pin 10 is DOPIN!)
-  digitalWrite(PA, HIGH);
+  pinMode(10, OUTPUT); // GPIO 10 is the standard PA_EN for this board
+  digitalWrite(10, HIGH);
 
   gfx->begin();
   gfx->setBrightness(255);
@@ -558,7 +460,6 @@ void setup() {
   lv_indev_drv_init(&indev_drv);
   indev_drv.type = LV_INDEV_TYPE_POINTER;
   indev_drv.read_cb = my_touchpad_read;
-  indev_drv.feedback_cb = my_indev_feedback;
   lv_indev_drv_register(&indev_drv);
 
   // 6. SquareLine UI Start
@@ -596,18 +497,8 @@ void setup() {
   lv_obj_add_event_cb(ui_Button3, handle_timer_buttons, LV_EVENT_ALL, NULL);
   lv_obj_add_event_cb(ui_Button6, start_timer_cb, LV_EVENT_CLICKED, NULL);
   lv_obj_add_event_cb(ui_Button9, end_timer_cb, LV_EVENT_CLICKED, NULL);
-  lv_obj_add_event_cb(ui_Button10, pause_timer_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(ui_Button10, pause_timer_cb, LV_EVENT_CLICKED, NULL);  
   update_timer_label();
-
-  // Pet screen: tap anywhere plays a random pikachu clip
-  lv_obj_add_event_cb(ui_Pet, pet_screen_clicked, LV_EVENT_CLICKED, NULL);
-
-  // StopWatch wiring
-  lv_obj_add_event_cb(ui_PausePlay, handle_stopwatch_events, LV_EVENT_CLICKED, NULL);
-  lv_obj_add_event_cb(ui_Reset,     handle_stopwatch_events, LV_EVENT_CLICKED, NULL);
-  lv_obj_clear_flag(ui_StopWatch, LV_OBJ_FLAG_SCROLLABLE);
-  update_stopwatch_label();
-  update_pauseplay_icon();
 
   // 8. WiFi, Time & Audio
   WiFi.begin(ssid, password);
@@ -641,35 +532,6 @@ void loop() {
     lastSec = ti.tm_sec;
     lv_obj_invalidate(lv_scr_act()); // Add this: Forces a full screen refresh every cycle
     updateAllLogic(ti);
-
-    // Hour chime: trigger random pikachu clip on hour rollover (skip the first observation at boot)
-    {
-        static int last_seen_hour = -1;
-        if (last_seen_hour != ti.tm_hour) {
-            if (chimes_enabled && last_seen_hour != -1 && PIKACHU_CLIP_COUNT > 0) {
-                chime_clip_idx = random(PIKACHU_CLIP_COUNT);
-                play_chime = true;
-            }
-            last_seen_hour = ti.tm_hour;
-        }
-    }
-
-    // Auto-dim: when enabled, force dark theme during DARK_START_HOUR..DARK_END_HOUR.
-    // Note: apply_dark_mode(true)  -> yellow bg (light)
-    //       apply_dark_mode(false) -> black  bg (dark)
-    // is_dark mirrors that arg, so is_dark==false means visually-dark.
-    if (auto_dim_enabled) {
-        bool in_night_window =
-            (DARK_START_HOUR < DARK_END_HOUR)
-              ? (ti.tm_hour >= DARK_START_HOUR && ti.tm_hour < DARK_END_HOUR)
-              : (ti.tm_hour >= DARK_START_HOUR || ti.tm_hour < DARK_END_HOUR);
-        bool target_light = !in_night_window;
-        if (target_light != is_dark) {
-            is_dark = target_light;
-            apply_dark_mode(is_dark);
-            if (ui_Label26) lv_obj_set_style_img_recolor(ui_Label26, is_dark ? lv_color_hex(0x2095F6) : lv_color_hex(0xFFFFFF), 0);
-        }
-    }
   }
   // Timer Countdown Logic
   if (timer_running && timer_seconds > 0) {

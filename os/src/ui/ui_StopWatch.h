@@ -13,11 +13,12 @@ extern "C" {
 // SCREEN: ui_StopWatch
 extern void ui_StopWatch_screen_init(void);
 extern void ui_StopWatch_screen_destroy(void);
+extern void ui_event_StopWatch( lv_event_t * e);
 extern lv_obj_t *ui_StopWatch;
-extern lv_obj_t *ui_Label43;
-extern lv_obj_t *ui_Button4;
+extern lv_obj_t *ui_Time;
+extern lv_obj_t *ui_PausePlay;
 extern lv_obj_t *ui_Label42;
-extern lv_obj_t *ui_Button7;
+extern lv_obj_t *ui_Reset;
 extern lv_obj_t *ui_Label44;
 // CUSTOM VARIABLES
 

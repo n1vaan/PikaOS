@@ -5,8 +5,16 @@
 
 #include "ui.h"
 
-lv_obj_t *ui_StopWatch = NULL;lv_obj_t *ui_Label43 = NULL;lv_obj_t *ui_Button4 = NULL;lv_obj_t *ui_Label42 = NULL;lv_obj_t *ui_Button7 = NULL;lv_obj_t *ui_Label44 = NULL;
+lv_obj_t *ui_StopWatch = NULL;lv_obj_t *ui_Time = NULL;lv_obj_t *ui_PausePlay = NULL;lv_obj_t *ui_Label42 = NULL;lv_obj_t *ui_Reset = NULL;lv_obj_t *ui_Label44 = NULL;
 // event funtions
+void ui_event_StopWatch( lv_event_t * e) {
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+if ( event_code == LV_EVENT_GESTURE &&  lv_indev_get_gesture_dir(lv_indev_get_act()) == LV_DIR_TOP  ) {
+lv_indev_wait_release(lv_indev_get_act());
+      _ui_screen_change( &ui_Analog, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, &ui_Analog_screen_init);
+}
+}
 
 // build funtions
 
@@ -17,30 +25,30 @@ lv_obj_clear_flag( ui_StopWatch, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 ui_object_set_themeable_style_property(ui_StopWatch, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Default_Yellow);
 ui_object_set_themeable_style_property(ui_StopWatch, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Default_Yellow);
 
-ui_Label43 = lv_label_create(ui_StopWatch);
-lv_obj_set_width( ui_Label43, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label43, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label43, 0 );
-lv_obj_set_y( ui_Label43, -32 );
-lv_obj_set_align( ui_Label43, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label43,"00:00:00");
-lv_obj_set_style_text_color(ui_Label43, lv_color_hex(0xE30B0B), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_text_opa(ui_Label43, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_text_font(ui_Label43, &ui_font_Poke90, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_transform_zoom(ui_Label43, 256, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_Time = lv_label_create(ui_StopWatch);
+lv_obj_set_width( ui_Time, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Time, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_Time, 0 );
+lv_obj_set_y( ui_Time, -32 );
+lv_obj_set_align( ui_Time, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Time,"00:00:00");
+lv_obj_set_style_text_color(ui_Time, lv_color_hex(0xE30B0B), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_text_opa(ui_Time, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_text_font(ui_Time, &ui_font_Poke90, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_transform_zoom(ui_Time, 256, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Button4 = lv_btn_create(ui_StopWatch);
-lv_obj_set_width( ui_Button4, 128);
-lv_obj_set_height( ui_Button4, 119);
-lv_obj_set_x( ui_Button4, -67 );
-lv_obj_set_y( ui_Button4, 95 );
-lv_obj_set_align( ui_Button4, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button4, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button4, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-ui_object_set_themeable_style_property(ui_Button4, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Button4, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
+ui_PausePlay = lv_btn_create(ui_StopWatch);
+lv_obj_set_width( ui_PausePlay, 128);
+lv_obj_set_height( ui_PausePlay, 119);
+lv_obj_set_x( ui_PausePlay, -67 );
+lv_obj_set_y( ui_PausePlay, 95 );
+lv_obj_set_align( ui_PausePlay, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_PausePlay, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_PausePlay, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+ui_object_set_themeable_style_property(ui_PausePlay, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_PausePlay, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
 
-ui_Label42 = lv_label_create(ui_Button4);
+ui_Label42 = lv_label_create(ui_PausePlay);
 lv_obj_set_width( ui_Label42, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label42, LV_SIZE_CONTENT);   /// 1
 lv_obj_set_align( ui_Label42, LV_ALIGN_CENTER );
@@ -49,18 +57,18 @@ lv_obj_set_style_text_color(ui_Label42, lv_color_hex(0x000000), LV_PART_MAIN | L
 lv_obj_set_style_text_opa(ui_Label42, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_text_font(ui_Label42, &ui_font_IconsLarge, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Button7 = lv_btn_create(ui_StopWatch);
-lv_obj_set_width( ui_Button7, 128);
-lv_obj_set_height( ui_Button7, 119);
-lv_obj_set_x( ui_Button7, 67 );
-lv_obj_set_y( ui_Button7, 95 );
-lv_obj_set_align( ui_Button7, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button7, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button7, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-ui_object_set_themeable_style_property(ui_Button7, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Button7, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
+ui_Reset = lv_btn_create(ui_StopWatch);
+lv_obj_set_width( ui_Reset, 128);
+lv_obj_set_height( ui_Reset, 119);
+lv_obj_set_x( ui_Reset, 67 );
+lv_obj_set_y( ui_Reset, 95 );
+lv_obj_set_align( ui_Reset, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_Reset, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_Reset, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+ui_object_set_themeable_style_property(ui_Reset, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Reset, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
 
-ui_Label44 = lv_label_create(ui_Button7);
+ui_Label44 = lv_label_create(ui_Reset);
 lv_obj_set_width( ui_Label44, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label44, LV_SIZE_CONTENT);   /// 1
 lv_obj_set_align( ui_Label44, LV_ALIGN_CENTER );
@@ -68,6 +76,8 @@ lv_label_set_text(ui_Label44,"i");
 lv_obj_set_style_text_color(ui_Label44, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
 lv_obj_set_style_text_opa(ui_Label44, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_text_font(ui_Label44, &ui_font_IconsLarge, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+lv_obj_add_event_cb(ui_StopWatch, ui_event_StopWatch, LV_EVENT_ALL, NULL);
 
 }
 
@@ -77,10 +87,10 @@ void ui_StopWatch_screen_destroy(void)
 
 // NULL screen variables
 ui_StopWatch= NULL;
-ui_Label43= NULL;
-ui_Button4= NULL;
+ui_Time= NULL;
+ui_PausePlay= NULL;
 ui_Label42= NULL;
-ui_Button7= NULL;
+ui_Reset= NULL;
 ui_Label44= NULL;
 
 }

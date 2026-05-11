@@ -14,13 +14,13 @@ if ( event_code == LV_EVENT_GESTURE &&  lv_indev_get_gesture_dir(lv_indev_get_ac
 lv_indev_wait_release(lv_indev_get_act());
       _ui_screen_change( &ui_Photo, LV_SCR_LOAD_ANIM_OVER_RIGHT, 500, 0, &ui_Photo_screen_init);
 }
-if ( event_code == LV_EVENT_GESTURE &&  lv_indev_get_gesture_dir(lv_indev_get_act()) == LV_DIR_BOTTOM  ) {
-lv_indev_wait_release(lv_indev_get_act());
-      _ui_screen_change( &ui_Timer, LV_SCR_LOAD_ANIM_MOVE_BOTTOM, 500, 0, &ui_Timer_screen_init);
-}
 if ( event_code == LV_EVENT_GESTURE &&  lv_indev_get_gesture_dir(lv_indev_get_act()) == LV_DIR_LEFT  ) {
 lv_indev_wait_release(lv_indev_get_act());
-      _ui_screen_change( &ui_PokeBallAnalog, LV_SCR_LOAD_ANIM_MOVE_LEFT, 500, 0, &ui_PokeBallAnalog_screen_init);
+      _ui_screen_change( &ui_Pet, LV_SCR_LOAD_ANIM_MOVE_LEFT, 500, 0, &ui_Pet_screen_init);
+}
+if ( event_code == LV_EVENT_GESTURE &&  lv_indev_get_gesture_dir(lv_indev_get_act()) == LV_DIR_TOP  ) {
+lv_indev_wait_release(lv_indev_get_act());
+      _ui_screen_change( &ui_Settings, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, &ui_Settings_screen_init);
 }
 }
 

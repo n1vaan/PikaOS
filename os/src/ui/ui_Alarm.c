@@ -5,8 +5,16 @@
 
 #include "ui.h"
 
-lv_obj_t *ui_Alarm = NULL;lv_obj_t *ui_AlarmContainer = NULL;lv_obj_t *ui_Alarm1 = NULL;lv_obj_t *ui_Label46 = NULL;lv_obj_t *ui_Button11 = NULL;lv_obj_t *ui_Label47 = NULL;lv_obj_t *ui_Label48 = NULL;lv_obj_t *ui_Label55 = NULL;lv_obj_t *ui_Alarm2 = NULL;lv_obj_t *ui_Label49 = NULL;lv_obj_t *ui_Button12 = NULL;lv_obj_t *ui_Label50 = NULL;lv_obj_t *ui_Label51 = NULL;lv_obj_t *ui_Label58 = NULL;lv_obj_t *ui_Alarm3 = NULL;lv_obj_t *ui_Label52 = NULL;lv_obj_t *ui_Button13 = NULL;lv_obj_t *ui_Label53 = NULL;lv_obj_t *ui_Label54 = NULL;lv_obj_t *ui_Label57 = NULL;lv_obj_t *ui_Button8 = NULL;lv_obj_t *ui_Label45 = NULL;lv_obj_t *ui_AlarmSetContainer = NULL;lv_obj_t *ui_Panel7 = NULL;lv_obj_t *ui_Label60 = NULL;lv_obj_t *ui_Button15 = NULL;lv_obj_t *ui_Label61 = NULL;lv_obj_t *ui_Button14 = NULL;lv_obj_t *ui_Label59 = NULL;lv_obj_t *ui_Button16 = NULL;lv_obj_t *ui_Label62 = NULL;lv_obj_t *ui_Button17 = NULL;lv_obj_t *ui_Label63 = NULL;lv_obj_t *ui_Button18 = NULL;lv_obj_t *ui_Label56 = NULL;lv_obj_t *ui_Button19 = NULL;lv_obj_t *ui_Label64 = NULL;lv_obj_t *ui_Dropdown2 = NULL;lv_obj_t *ui_TextArea1 = NULL;lv_obj_t *ui_Keyboard1 = NULL;
+lv_obj_t *ui_Alarm = NULL;lv_obj_t *ui_Timers = NULL;lv_obj_t *ui_Timer1 = NULL;lv_obj_t *ui_DeleteTimer = NULL;lv_obj_t *ui_Label47 = NULL;lv_obj_t *ui_Label46 = NULL;lv_obj_t *ui_TimeLabel = NULL;lv_obj_t *ui_Timer2 = NULL;lv_obj_t *ui_DeleteTimer1 = NULL;lv_obj_t *ui_Label48 = NULL;lv_obj_t *ui_Label49 = NULL;lv_obj_t *ui_TimeLabel1 = NULL;lv_obj_t *ui_Timer3 = NULL;lv_obj_t *ui_DeleteTimer2 = NULL;lv_obj_t *ui_Label50 = NULL;lv_obj_t *ui_Label51 = NULL;lv_obj_t *ui_TimeLabel2 = NULL;lv_obj_t *ui_Timer4 = NULL;lv_obj_t *ui_DeleteTimer3 = NULL;lv_obj_t *ui_Label52 = NULL;lv_obj_t *ui_Label53 = NULL;lv_obj_t *ui_TimeLabel3 = NULL;lv_obj_t *ui_AddTimer = NULL;lv_obj_t *ui_Label45 = NULL;lv_obj_t *ui_TimerSetPopup = NULL;lv_obj_t *ui_Panel7 = NULL;lv_obj_t *ui_AlarmTime = NULL;lv_obj_t *ui_HourPlus = NULL;lv_obj_t *ui_Label54 = NULL;lv_obj_t *ui_HourMinus = NULL;lv_obj_t *ui_Label55 = NULL;lv_obj_t *ui_MinuteMinus = NULL;lv_obj_t *ui_Label56 = NULL;lv_obj_t *ui_MinuteMinus1 = NULL;lv_obj_t *ui_Label57 = NULL;lv_obj_t *ui_AMPMDropdown2 = NULL;lv_obj_t *ui_CancelButton = NULL;lv_obj_t *ui_Label58 = NULL;lv_obj_t *ui_AddButton = NULL;lv_obj_t *ui_Label59 = NULL;
 // event funtions
+void ui_event_Alarm( lv_event_t * e) {
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+if ( event_code == LV_EVENT_GESTURE &&  lv_indev_get_gesture_dir(lv_indev_get_act()) == LV_DIR_TOP  ) {
+lv_indev_wait_release(lv_indev_get_act());
+      _ui_screen_change( &ui_Photo, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, &ui_Photo_screen_init);
+}
+}
 
 // build funtions
 
@@ -17,51 +25,43 @@ lv_obj_clear_flag( ui_Alarm, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 ui_object_set_themeable_style_property(ui_Alarm, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Default_Yellow);
 ui_object_set_themeable_style_property(ui_Alarm, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Default_Yellow);
 
-ui_AlarmContainer = lv_obj_create(ui_Alarm);
-lv_obj_remove_style_all(ui_AlarmContainer);
-lv_obj_set_width( ui_AlarmContainer, 391);
-lv_obj_set_height( ui_AlarmContainer, 446);
-lv_obj_set_x( ui_AlarmContainer, -1 );
-lv_obj_set_y( ui_AlarmContainer, -35 );
-lv_obj_set_align( ui_AlarmContainer, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_AlarmContainer, LV_OBJ_FLAG_HIDDEN );   /// Flags
-lv_obj_clear_flag( ui_AlarmContainer, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-ui_object_set_themeable_style_property(ui_AlarmContainer, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_AlarmContainer, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_OPA, _ui_theme_alpha_Red);
+lv_obj_add_event_cb(ui_Alarm, ui_event_Alarm, LV_EVENT_ALL, NULL);
+return;  // Alarm UI disabled — SquareLine output renders incorrectly. Stub only.
 
-ui_Alarm1 = lv_obj_create(ui_AlarmContainer);
-lv_obj_set_width( ui_Alarm1, 361);
-lv_obj_set_height( ui_Alarm1, 69);
-lv_obj_set_x( ui_Alarm1, 0 );
-lv_obj_set_y( ui_Alarm1, -69 );
-lv_obj_set_align( ui_Alarm1, LV_ALIGN_CENTER );
-lv_obj_clear_flag( ui_Alarm1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-ui_object_set_themeable_style_property(ui_Alarm1, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Alarm1, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
-ui_object_set_themeable_style_property(ui_Alarm1, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Alarm1, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_OPA, _ui_theme_alpha_Red);
+ui_Timers = lv_obj_create(ui_Alarm);
+lv_obj_remove_style_all(ui_Timers);
+lv_obj_set_width( ui_Timers, 384);
+lv_obj_set_height( ui_Timers, 535);
+lv_obj_set_x( ui_Timers, 0 );
+lv_obj_set_y( ui_Timers, -31 );
+lv_obj_set_align( ui_Timers, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_Timers, LV_OBJ_FLAG_HIDDEN );   /// Flags
+lv_obj_clear_flag( ui_Timers, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 
-ui_Label46 = lv_label_create(ui_Alarm1);
-lv_obj_set_width( ui_Label46, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label46, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label46, -145 );
-lv_obj_set_y( ui_Label46, 0 );
-lv_obj_set_align( ui_Label46, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label46,"r");
-lv_obj_set_style_text_font(ui_Label46, &ui_font_IconsLarge, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_Timer1 = lv_obj_create(ui_Timers);
+lv_obj_set_width( ui_Timer1, 302);
+lv_obj_set_height( ui_Timer1, 66);
+lv_obj_set_x( ui_Timer1, 0 );
+lv_obj_set_y( ui_Timer1, -100 );
+lv_obj_set_align( ui_Timer1, LV_ALIGN_CENTER );
+lv_obj_clear_flag( ui_Timer1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+ui_object_set_themeable_style_property(ui_Timer1, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Timer1, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
+ui_object_set_themeable_style_property(ui_Timer1, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Timer1, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_OPA, _ui_theme_alpha_Red);
 
-ui_Button11 = lv_btn_create(ui_Alarm1);
-lv_obj_set_width( ui_Button11, 60);
-lv_obj_set_height( ui_Button11, 60);
-lv_obj_set_x( ui_Button11, 145 );
-lv_obj_set_y( ui_Button11, 0 );
-lv_obj_set_align( ui_Button11, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button11, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button11, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_bg_color(ui_Button11, lv_color_hex(0x9E0000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Button11, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_DeleteTimer = lv_btn_create(ui_Timer1);
+lv_obj_set_width( ui_DeleteTimer, 55);
+lv_obj_set_height( ui_DeleteTimer, 55);
+lv_obj_set_x( ui_DeleteTimer, 117 );
+lv_obj_set_y( ui_DeleteTimer, 0 );
+lv_obj_set_align( ui_DeleteTimer, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_DeleteTimer, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_DeleteTimer, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_DeleteTimer, lv_color_hex(0x950000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_DeleteTimer, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Label47 = lv_label_create(ui_Button11);
+ui_Label47 = lv_label_create(ui_DeleteTimer);
 lv_obj_set_width( ui_Label47, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label47, LV_SIZE_CONTENT);   /// 1
 lv_obj_set_align( ui_Label47, LV_ALIGN_CENTER );
@@ -70,57 +70,98 @@ lv_obj_set_style_text_color(ui_Label47, lv_color_hex(0x000000), LV_PART_MAIN | L
 lv_obj_set_style_text_opa(ui_Label47, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_text_font(ui_Label47, &ui_font_IconsLarge, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Label48 = lv_label_create(ui_Alarm1);
+ui_Label46 = lv_label_create(ui_Timer1);
+lv_obj_set_width( ui_Label46, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Label46, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_Label46, -118 );
+lv_obj_set_y( ui_Label46, -2 );
+lv_obj_set_align( ui_Label46, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Label46,"r");
+lv_obj_set_style_text_color(ui_Label46, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_text_opa(ui_Label46, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_text_font(ui_Label46, &ui_font_IconsLarge, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_TimeLabel = lv_label_create(ui_Timer1);
+lv_obj_set_width( ui_TimeLabel, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_TimeLabel, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_align( ui_TimeLabel, LV_ALIGN_CENTER );
+lv_label_set_text(ui_TimeLabel,"No Timer");
+lv_obj_set_style_text_font(ui_TimeLabel, &lv_font_montserrat_28, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_Timer2 = lv_obj_create(ui_Timers);
+lv_obj_set_width( ui_Timer2, 302);
+lv_obj_set_height( ui_Timer2, 66);
+lv_obj_set_x( ui_Timer2, 0 );
+lv_obj_set_y( ui_Timer2, -25 );
+lv_obj_set_align( ui_Timer2, LV_ALIGN_CENTER );
+lv_obj_clear_flag( ui_Timer2, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+ui_object_set_themeable_style_property(ui_Timer2, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Timer2, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
+ui_object_set_themeable_style_property(ui_Timer2, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Timer2, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_OPA, _ui_theme_alpha_Red);
+
+ui_DeleteTimer1 = lv_btn_create(ui_Timer2);
+lv_obj_set_width( ui_DeleteTimer1, 55);
+lv_obj_set_height( ui_DeleteTimer1, 55);
+lv_obj_set_x( ui_DeleteTimer1, 117 );
+lv_obj_set_y( ui_DeleteTimer1, 0 );
+lv_obj_set_align( ui_DeleteTimer1, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_DeleteTimer1, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_DeleteTimer1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_DeleteTimer1, lv_color_hex(0x950000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_DeleteTimer1, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_Label48 = lv_label_create(ui_DeleteTimer1);
 lv_obj_set_width( ui_Label48, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label48, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label48, 0 );
-lv_obj_set_y( ui_Label48, 19 );
 lv_obj_set_align( ui_Label48, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label48,"00:25 PM");
-lv_obj_set_style_text_font(ui_Label48, &lv_font_montserrat_28, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_label_set_text(ui_Label48,"q");
+lv_obj_set_style_text_color(ui_Label48, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_text_opa(ui_Label48, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_text_font(ui_Label48, &ui_font_IconsLarge, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Label55 = lv_label_create(ui_Alarm1);
-lv_obj_set_width( ui_Label55, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label55, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label55, 0 );
-lv_obj_set_y( ui_Label55, -14 );
-lv_obj_set_align( ui_Label55, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label55,"Label 1");
-lv_obj_set_style_text_font(ui_Label55, &lv_font_montserrat_28, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-ui_Alarm2 = lv_obj_create(ui_AlarmContainer);
-lv_obj_set_width( ui_Alarm2, 361);
-lv_obj_set_height( ui_Alarm2, 69);
-lv_obj_set_x( ui_Alarm2, 0 );
-lv_obj_set_y( ui_Alarm2, 9 );
-lv_obj_set_align( ui_Alarm2, LV_ALIGN_CENTER );
-lv_obj_clear_flag( ui_Alarm2, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-ui_object_set_themeable_style_property(ui_Alarm2, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Alarm2, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
-ui_object_set_themeable_style_property(ui_Alarm2, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Alarm2, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_OPA, _ui_theme_alpha_Red);
-
-ui_Label49 = lv_label_create(ui_Alarm2);
+ui_Label49 = lv_label_create(ui_Timer2);
 lv_obj_set_width( ui_Label49, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label49, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label49, -145 );
-lv_obj_set_y( ui_Label49, 0 );
+lv_obj_set_x( ui_Label49, -118 );
+lv_obj_set_y( ui_Label49, -2 );
 lv_obj_set_align( ui_Label49, LV_ALIGN_CENTER );
 lv_label_set_text(ui_Label49,"r");
+lv_obj_set_style_text_color(ui_Label49, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_text_opa(ui_Label49, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_text_font(ui_Label49, &ui_font_IconsLarge, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Button12 = lv_btn_create(ui_Alarm2);
-lv_obj_set_width( ui_Button12, 60);
-lv_obj_set_height( ui_Button12, 60);
-lv_obj_set_x( ui_Button12, 145 );
-lv_obj_set_y( ui_Button12, 0 );
-lv_obj_set_align( ui_Button12, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button12, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button12, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_bg_color(ui_Button12, lv_color_hex(0x9E0000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Button12, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_TimeLabel1 = lv_label_create(ui_Timer2);
+lv_obj_set_width( ui_TimeLabel1, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_TimeLabel1, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_align( ui_TimeLabel1, LV_ALIGN_CENTER );
+lv_label_set_text(ui_TimeLabel1,"No Timer");
+lv_obj_set_style_text_font(ui_TimeLabel1, &lv_font_montserrat_28, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Label50 = lv_label_create(ui_Button12);
+ui_Timer3 = lv_obj_create(ui_Timers);
+lv_obj_set_width( ui_Timer3, 302);
+lv_obj_set_height( ui_Timer3, 66);
+lv_obj_set_x( ui_Timer3, 0 );
+lv_obj_set_y( ui_Timer3, 50 );
+lv_obj_set_align( ui_Timer3, LV_ALIGN_CENTER );
+lv_obj_clear_flag( ui_Timer3, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+ui_object_set_themeable_style_property(ui_Timer3, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Timer3, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
+ui_object_set_themeable_style_property(ui_Timer3, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Timer3, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_OPA, _ui_theme_alpha_Red);
+
+ui_DeleteTimer2 = lv_btn_create(ui_Timer3);
+lv_obj_set_width( ui_DeleteTimer2, 55);
+lv_obj_set_height( ui_DeleteTimer2, 55);
+lv_obj_set_x( ui_DeleteTimer2, 117 );
+lv_obj_set_y( ui_DeleteTimer2, 0 );
+lv_obj_set_align( ui_DeleteTimer2, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_DeleteTimer2, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_DeleteTimer2, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_DeleteTimer2, lv_color_hex(0x950000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_DeleteTimer2, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_Label50 = lv_label_create(ui_DeleteTimer2);
 lv_obj_set_width( ui_Label50, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label50, LV_SIZE_CONTENT);   /// 1
 lv_obj_set_align( ui_Label50, LV_ALIGN_CENTER );
@@ -129,95 +170,86 @@ lv_obj_set_style_text_color(ui_Label50, lv_color_hex(0x000000), LV_PART_MAIN | L
 lv_obj_set_style_text_opa(ui_Label50, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_text_font(ui_Label50, &ui_font_IconsLarge, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Label51 = lv_label_create(ui_Alarm2);
+ui_Label51 = lv_label_create(ui_Timer3);
 lv_obj_set_width( ui_Label51, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label51, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label51, 0 );
-lv_obj_set_y( ui_Label51, 19 );
+lv_obj_set_x( ui_Label51, -118 );
+lv_obj_set_y( ui_Label51, -2 );
 lv_obj_set_align( ui_Label51, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label51,"00:25 PM");
-lv_obj_set_style_text_font(ui_Label51, &lv_font_montserrat_28, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_label_set_text(ui_Label51,"r");
+lv_obj_set_style_text_color(ui_Label51, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_text_opa(ui_Label51, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_text_font(ui_Label51, &ui_font_IconsLarge, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Label58 = lv_label_create(ui_Alarm2);
-lv_obj_set_width( ui_Label58, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label58, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label58, 0 );
-lv_obj_set_y( ui_Label58, -14 );
-lv_obj_set_align( ui_Label58, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label58,"Label 2");
-lv_obj_set_style_text_font(ui_Label58, &lv_font_montserrat_28, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_TimeLabel2 = lv_label_create(ui_Timer3);
+lv_obj_set_width( ui_TimeLabel2, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_TimeLabel2, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_align( ui_TimeLabel2, LV_ALIGN_CENTER );
+lv_label_set_text(ui_TimeLabel2,"No Timer");
+lv_obj_set_style_text_font(ui_TimeLabel2, &lv_font_montserrat_28, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Alarm3 = lv_obj_create(ui_AlarmContainer);
-lv_obj_set_width( ui_Alarm3, 361);
-lv_obj_set_height( ui_Alarm3, 69);
-lv_obj_set_x( ui_Alarm3, 0 );
-lv_obj_set_y( ui_Alarm3, 86 );
-lv_obj_set_align( ui_Alarm3, LV_ALIGN_CENTER );
-lv_obj_clear_flag( ui_Alarm3, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-ui_object_set_themeable_style_property(ui_Alarm3, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Alarm3, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
-ui_object_set_themeable_style_property(ui_Alarm3, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Alarm3, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_OPA, _ui_theme_alpha_Red);
+ui_Timer4 = lv_obj_create(ui_Timers);
+lv_obj_set_width( ui_Timer4, 302);
+lv_obj_set_height( ui_Timer4, 66);
+lv_obj_set_x( ui_Timer4, 0 );
+lv_obj_set_y( ui_Timer4, 125 );
+lv_obj_set_align( ui_Timer4, LV_ALIGN_CENTER );
+lv_obj_clear_flag( ui_Timer4, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+ui_object_set_themeable_style_property(ui_Timer4, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Timer4, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
+ui_object_set_themeable_style_property(ui_Timer4, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Timer4, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_OPA, _ui_theme_alpha_Red);
 
-ui_Label52 = lv_label_create(ui_Alarm3);
+ui_DeleteTimer3 = lv_btn_create(ui_Timer4);
+lv_obj_set_width( ui_DeleteTimer3, 55);
+lv_obj_set_height( ui_DeleteTimer3, 55);
+lv_obj_set_x( ui_DeleteTimer3, 117 );
+lv_obj_set_y( ui_DeleteTimer3, 0 );
+lv_obj_set_align( ui_DeleteTimer3, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_DeleteTimer3, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_DeleteTimer3, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_DeleteTimer3, lv_color_hex(0x950000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_DeleteTimer3, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_Label52 = lv_label_create(ui_DeleteTimer3);
 lv_obj_set_width( ui_Label52, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label52, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label52, -145 );
-lv_obj_set_y( ui_Label52, 0 );
 lv_obj_set_align( ui_Label52, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label52,"r");
+lv_label_set_text(ui_Label52,"q");
+lv_obj_set_style_text_color(ui_Label52, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_text_opa(ui_Label52, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_text_font(ui_Label52, &ui_font_IconsLarge, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Button13 = lv_btn_create(ui_Alarm3);
-lv_obj_set_width( ui_Button13, 60);
-lv_obj_set_height( ui_Button13, 60);
-lv_obj_set_x( ui_Button13, 145 );
-lv_obj_set_y( ui_Button13, 0 );
-lv_obj_set_align( ui_Button13, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button13, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button13, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_bg_color(ui_Button13, lv_color_hex(0x9E0000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Button13, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-ui_Label53 = lv_label_create(ui_Button13);
+ui_Label53 = lv_label_create(ui_Timer4);
 lv_obj_set_width( ui_Label53, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label53, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_Label53, -118 );
+lv_obj_set_y( ui_Label53, -2 );
 lv_obj_set_align( ui_Label53, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label53,"q");
+lv_label_set_text(ui_Label53,"r");
 lv_obj_set_style_text_color(ui_Label53, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
 lv_obj_set_style_text_opa(ui_Label53, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_text_font(ui_Label53, &ui_font_IconsLarge, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Label54 = lv_label_create(ui_Alarm3);
-lv_obj_set_width( ui_Label54, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label54, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label54, 0 );
-lv_obj_set_y( ui_Label54, 19 );
-lv_obj_set_align( ui_Label54, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label54,"00:25 PM");
-lv_obj_set_style_text_font(ui_Label54, &lv_font_montserrat_28, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_TimeLabel3 = lv_label_create(ui_Timer4);
+lv_obj_set_width( ui_TimeLabel3, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_TimeLabel3, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_align( ui_TimeLabel3, LV_ALIGN_CENTER );
+lv_label_set_text(ui_TimeLabel3,"No Timer");
+lv_obj_set_style_text_font(ui_TimeLabel3, &lv_font_montserrat_28, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Label57 = lv_label_create(ui_Alarm3);
-lv_obj_set_width( ui_Label57, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label57, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label57, 0 );
-lv_obj_set_y( ui_Label57, -14 );
-lv_obj_set_align( ui_Label57, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label57,"Label 3");
-lv_obj_set_style_text_font(ui_Label57, &lv_font_montserrat_28, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_AddTimer = lv_btn_create(ui_Timers);
+lv_obj_set_width( ui_AddTimer, 194);
+lv_obj_set_height( ui_AddTimer, 79);
+lv_obj_set_x( ui_AddTimer, 0 );
+lv_obj_set_y( ui_AddTimer, 206 );
+lv_obj_set_align( ui_AddTimer, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_AddTimer, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_AddTimer, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+ui_object_set_themeable_style_property(ui_AddTimer, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_AddTimer, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
 
-ui_Button8 = lv_btn_create(ui_AlarmContainer);
-lv_obj_set_width( ui_Button8, 194);
-lv_obj_set_height( ui_Button8, 79);
-lv_obj_set_x( ui_Button8, 0 );
-lv_obj_set_y( ui_Button8, 174 );
-lv_obj_set_align( ui_Button8, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button8, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button8, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-ui_object_set_themeable_style_property(ui_Button8, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Button8, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Red);
-
-ui_Label45 = lv_label_create(ui_Button8);
+ui_Label45 = lv_label_create(ui_AddTimer);
 lv_obj_set_width( ui_Label45, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label45, LV_SIZE_CONTENT);   /// 1
 lv_obj_set_align( ui_Label45, LV_ALIGN_CENTER );
@@ -226,18 +258,16 @@ lv_obj_set_style_text_color(ui_Label45, lv_color_hex(0x000000), LV_PART_MAIN | L
 lv_obj_set_style_text_opa(ui_Label45, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_text_font(ui_Label45, &ui_font_IconsLarge, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_AlarmSetContainer = lv_obj_create(ui_Alarm);
-lv_obj_remove_style_all(ui_AlarmSetContainer);
-lv_obj_set_width( ui_AlarmSetContainer, 375);
-lv_obj_set_height( ui_AlarmSetContainer, 357);
-lv_obj_set_x( ui_AlarmSetContainer, 0 );
-lv_obj_set_y( ui_AlarmSetContainer, -1 );
-lv_obj_set_align( ui_AlarmSetContainer, LV_ALIGN_CENTER );
-lv_obj_clear_flag( ui_AlarmSetContainer, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+ui_TimerSetPopup = lv_obj_create(ui_Alarm);
+lv_obj_remove_style_all(ui_TimerSetPopup);
+lv_obj_set_width( ui_TimerSetPopup, 402);
+lv_obj_set_height( ui_TimerSetPopup, 422);
+lv_obj_set_align( ui_TimerSetPopup, LV_ALIGN_CENTER );
+lv_obj_clear_flag( ui_TimerSetPopup, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 
-ui_Panel7 = lv_obj_create(ui_AlarmSetContainer);
-lv_obj_set_width( ui_Panel7, 346);
-lv_obj_set_height( ui_Panel7, 319);
+ui_Panel7 = lv_obj_create(ui_TimerSetPopup);
+lv_obj_set_width( ui_Panel7, 287);
+lv_obj_set_height( ui_Panel7, 330);
 lv_obj_set_align( ui_Panel7, LV_ALIGN_CENTER );
 lv_obj_clear_flag( ui_Panel7, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 ui_object_set_themeable_style_property(ui_Panel7, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Red);
@@ -245,186 +275,180 @@ ui_object_set_themeable_style_property(ui_Panel7, LV_PART_MAIN| LV_STATE_DEFAULT
 ui_object_set_themeable_style_property(ui_Panel7, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_COLOR, _ui_theme_color_Red);
 ui_object_set_themeable_style_property(ui_Panel7, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BORDER_OPA, _ui_theme_alpha_Red);
 
-ui_Label60 = lv_label_create(ui_Panel7);
-lv_obj_set_width( ui_Label60, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label60, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label60, 0 );
-lv_obj_set_y( ui_Label60, -77 );
-lv_obj_set_align( ui_Label60, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label60,"00:25");
-lv_obj_set_style_text_color(ui_Label60, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_text_opa(ui_Label60, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_text_font(ui_Label60, &ui_font_Poke90, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_transform_zoom(ui_Label60, 256, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_AlarmTime = lv_label_create(ui_TimerSetPopup);
+lv_obj_set_width( ui_AlarmTime, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_AlarmTime, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_AlarmTime, 0 );
+lv_obj_set_y( ui_AlarmTime, 0 );  // was -97, testing
+lv_obj_set_align( ui_AlarmTime, LV_ALIGN_CENTER );
+lv_label_set_text(ui_AlarmTime,"00:00");
+lv_obj_set_style_text_color(ui_AlarmTime, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_text_opa(ui_AlarmTime, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_text_font(ui_AlarmTime, &ui_font_Poke90, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Button15 = lv_btn_create(ui_Panel7);
-lv_obj_set_width( ui_Button15, 53);
-lv_obj_set_height( ui_Button15, 37);
-lv_obj_set_x( ui_Button15, -108 );
-lv_obj_set_y( ui_Button15, -15 );
-lv_obj_set_align( ui_Button15, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button15, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button15, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_radius(ui_Button15, 120, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_bg_color(ui_Button15, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Button15, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_add_flag(ui_TimerSetPopup, LV_OBJ_FLAG_HIDDEN);
+lv_obj_add_event_cb(ui_Alarm, ui_event_Alarm, LV_EVENT_ALL, NULL);
+return;  // TEST: popup + Panel7 + AlarmTime ONLY
 
-ui_Label61 = lv_label_create(ui_Button15);
-lv_obj_set_width( ui_Label61, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label61, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label61, 0 );
-lv_obj_set_y( ui_Label61, 5 );
-lv_obj_set_align( ui_Label61, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label61,"+");
-ui_object_set_themeable_style_property(ui_Label61, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Label61, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
-lv_obj_set_style_text_font(ui_Label61, &ui_font_Font1, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_HourPlus = lv_btn_create(ui_TimerSetPopup);
+lv_obj_set_width( ui_HourPlus, 40);
+lv_obj_set_height( ui_HourPlus, 40);
+lv_obj_set_x( ui_HourPlus, -99 );
+lv_obj_set_y( ui_HourPlus, -36 );
+lv_obj_set_align( ui_HourPlus, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_HourPlus, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_HourPlus, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_HourPlus, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_HourPlus, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Button14 = lv_btn_create(ui_Panel7);
-lv_obj_set_width( ui_Button14, 53);
-lv_obj_set_height( ui_Button14, 37);
-lv_obj_set_x( ui_Button14, -50 );
-lv_obj_set_y( ui_Button14, -15 );
-lv_obj_set_align( ui_Button14, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button14, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button14, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_radius(ui_Button14, 120, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_bg_color(ui_Button14, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Button14, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_Label54 = lv_label_create(ui_HourPlus);
+lv_obj_set_width( ui_Label54, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Label54, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_Label54, 0 );
+lv_obj_set_y( ui_Label54, 7 );
+lv_obj_set_align( ui_Label54, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Label54,"+");
+ui_object_set_themeable_style_property(ui_Label54, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Label54, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
+lv_obj_set_style_text_font(ui_Label54, &ui_font_Poke30, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Label59 = lv_label_create(ui_Button14);
-lv_obj_set_width( ui_Label59, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label59, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label59, 0 );
-lv_obj_set_y( ui_Label59, 5 );
-lv_obj_set_align( ui_Label59, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label59,"-");
-ui_object_set_themeable_style_property(ui_Label59, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Label59, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
-lv_obj_set_style_text_font(ui_Label59, &ui_font_Font1, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_HourMinus = lv_btn_create(ui_TimerSetPopup);
+lv_obj_set_width( ui_HourMinus, 40);
+lv_obj_set_height( ui_HourMinus, 40);
+lv_obj_set_x( ui_HourMinus, -51 );
+lv_obj_set_y( ui_HourMinus, -36 );
+lv_obj_set_align( ui_HourMinus, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_HourMinus, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_HourMinus, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_HourMinus, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_HourMinus, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Button16 = lv_btn_create(ui_Panel7);
-lv_obj_set_width( ui_Button16, 53);
-lv_obj_set_height( ui_Button16, 37);
-lv_obj_set_x( ui_Button16, 50 );
-lv_obj_set_y( ui_Button16, -15 );
-lv_obj_set_align( ui_Button16, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button16, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button16, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_radius(ui_Button16, 120, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_bg_color(ui_Button16, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Button16, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_Label55 = lv_label_create(ui_HourMinus);
+lv_obj_set_width( ui_Label55, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Label55, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_Label55, 0 );
+lv_obj_set_y( ui_Label55, 7 );
+lv_obj_set_align( ui_Label55, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Label55,"-");
+ui_object_set_themeable_style_property(ui_Label55, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Label55, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
+lv_obj_set_style_text_font(ui_Label55, &ui_font_Poke30, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Label62 = lv_label_create(ui_Button16);
-lv_obj_set_width( ui_Label62, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label62, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label62, 0 );
-lv_obj_set_y( ui_Label62, 5 );
-lv_obj_set_align( ui_Label62, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label62,"+");
-ui_object_set_themeable_style_property(ui_Label62, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Label62, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
-lv_obj_set_style_text_font(ui_Label62, &ui_font_Font1, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_MinuteMinus = lv_btn_create(ui_TimerSetPopup);
+lv_obj_set_width( ui_MinuteMinus, 40);
+lv_obj_set_height( ui_MinuteMinus, 40);
+lv_obj_set_x( ui_MinuteMinus, 99 );
+lv_obj_set_y( ui_MinuteMinus, -34 );
+lv_obj_set_align( ui_MinuteMinus, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_MinuteMinus, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_MinuteMinus, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_MinuteMinus, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_MinuteMinus, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Button17 = lv_btn_create(ui_Panel7);
-lv_obj_set_width( ui_Button17, 53);
-lv_obj_set_height( ui_Button17, 37);
-lv_obj_set_x( ui_Button17, 108 );
-lv_obj_set_y( ui_Button17, -15 );
-lv_obj_set_align( ui_Button17, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button17, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button17, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_radius(ui_Button17, 120, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_bg_color(ui_Button17, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Button17, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-ui_Label63 = lv_label_create(ui_Button17);
-lv_obj_set_width( ui_Label63, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label63, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Label63, 0 );
-lv_obj_set_y( ui_Label63, 5 );
-lv_obj_set_align( ui_Label63, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label63,"-");
-ui_object_set_themeable_style_property(ui_Label63, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Label63, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
-lv_obj_set_style_text_font(ui_Label63, &ui_font_Font1, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-ui_Button18 = lv_btn_create(ui_AlarmSetContainer);
-lv_obj_set_width( ui_Button18, 151);
-lv_obj_set_height( ui_Button18, 50);
-lv_obj_set_x( ui_Button18, -81 );
-lv_obj_set_y( ui_Button18, 119 );
-lv_obj_set_align( ui_Button18, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button18, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button18, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_bg_color(ui_Button18, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Button18, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-ui_Label56 = lv_label_create(ui_Button18);
+ui_Label56 = lv_label_create(ui_MinuteMinus);
 lv_obj_set_width( ui_Label56, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label56, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_Label56, 0 );
+lv_obj_set_y( ui_Label56, 7 );
 lv_obj_set_align( ui_Label56, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label56,"Exit");
+lv_label_set_text(ui_Label56,"-");
 ui_object_set_themeable_style_property(ui_Label56, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
 ui_object_set_themeable_style_property(ui_Label56, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
-lv_obj_set_style_text_font(ui_Label56, &lv_font_montserrat_20, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_text_font(ui_Label56, &ui_font_Poke30, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Button19 = lv_btn_create(ui_AlarmSetContainer);
-lv_obj_set_width( ui_Button19, 151);
-lv_obj_set_height( ui_Button19, 50);
-lv_obj_set_x( ui_Button19, 81 );
-lv_obj_set_y( ui_Button19, 119 );
-lv_obj_set_align( ui_Button19, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Button19, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-lv_obj_clear_flag( ui_Button19, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_bg_color(ui_Button19, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Button19, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_MinuteMinus1 = lv_btn_create(ui_TimerSetPopup);
+lv_obj_set_width( ui_MinuteMinus1, 40);
+lv_obj_set_height( ui_MinuteMinus1, 40);
+lv_obj_set_x( ui_MinuteMinus1, 51 );
+lv_obj_set_y( ui_MinuteMinus1, -34 );
+lv_obj_set_align( ui_MinuteMinus1, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_MinuteMinus1, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_MinuteMinus1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_MinuteMinus1, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_MinuteMinus1, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Label64 = lv_label_create(ui_Button19);
-lv_obj_set_width( ui_Label64, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_Label64, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_align( ui_Label64, LV_ALIGN_CENTER );
-lv_label_set_text(ui_Label64,"Add");
-ui_object_set_themeable_style_property(ui_Label64, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Label64, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
-lv_obj_set_style_text_font(ui_Label64, &lv_font_montserrat_20, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_Label57 = lv_label_create(ui_MinuteMinus1);
+lv_obj_set_width( ui_Label57, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Label57, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_Label57, 0 );
+lv_obj_set_y( ui_Label57, 7 );
+lv_obj_set_align( ui_Label57, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Label57,"+");
+ui_object_set_themeable_style_property(ui_Label57, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Label57, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
+lv_obj_set_style_text_font(ui_Label57, &ui_font_Poke30, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Dropdown2 = lv_dropdown_create(ui_AlarmSetContainer);
-lv_dropdown_set_options( ui_Dropdown2, "AM\nPM\nOption 3" );
-lv_obj_set_width( ui_Dropdown2, 150);
-lv_obj_set_height( ui_Dropdown2, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_Dropdown2, -81 );
-lv_obj_set_y( ui_Dropdown2, 50 );
-lv_obj_set_align( ui_Dropdown2, LV_ALIGN_CENTER );
-lv_obj_add_flag( ui_Dropdown2, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
-ui_object_set_themeable_style_property(ui_Dropdown2, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
-ui_object_set_themeable_style_property(ui_Dropdown2, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
-lv_obj_set_style_bg_color(ui_Dropdown2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Dropdown2, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_border_color(ui_Dropdown2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_border_opa(ui_Dropdown2, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+if (0) { // skip dropdown + Cancel + Add — these crash the device
+ui_AMPMDropdown2 = lv_dropdown_create(ui_TimerSetPopup);
+lv_dropdown_set_options( ui_AMPMDropdown2, "AM\nPM" );
+lv_obj_set_width( ui_AMPMDropdown2, 240);
+lv_obj_set_height( ui_AMPMDropdown2, LV_SIZE_CONTENT);
+lv_obj_set_x( ui_AMPMDropdown2, 0 );
+lv_obj_set_y( ui_AMPMDropdown2, 20 );
+lv_obj_set_align( ui_AMPMDropdown2, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_AMPMDropdown2, LV_OBJ_FLAG_SCROLL_ON_FOCUS );
+ui_object_set_themeable_style_property(ui_AMPMDropdown2, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_AMPMDropdown2, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
+lv_obj_set_style_bg_color(ui_AMPMDropdown2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_AMPMDropdown2, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_border_color(ui_AMPMDropdown2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_border_opa(ui_AMPMDropdown2, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_TextArea1 = lv_textarea_create(ui_AlarmSetContainer);
-lv_obj_set_width( ui_TextArea1, 150);
-lv_obj_set_height( ui_TextArea1, 40);
-lv_obj_set_x( ui_TextArea1, 81 );
-lv_obj_set_y( ui_TextArea1, 50 );
-lv_obj_set_align( ui_TextArea1, LV_ALIGN_CENTER );
-lv_textarea_set_placeholder_text(ui_TextArea1,"Label");
-lv_obj_set_style_text_color(ui_TextArea1, lv_color_hex(0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_text_opa(ui_TextArea1, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_bg_color(ui_TextArea1, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_TextArea1, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_border_color(ui_TextArea1, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_border_opa(ui_TextArea1, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_bg_color(lv_dropdown_get_list(ui_AMPMDropdown2), lv_color_hex(0x000000),  LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(lv_dropdown_get_list(ui_AMPMDropdown2), 255,  LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_border_color(lv_dropdown_get_list(ui_AMPMDropdown2), lv_color_hex(0x000000),  LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_border_opa(lv_dropdown_get_list(ui_AMPMDropdown2), 255,  LV_PART_MAIN| LV_STATE_DEFAULT);
 
-lv_obj_set_style_text_color(ui_TextArea1, lv_color_hex(0xFF0000), LV_PART_TEXTAREA_PLACEHOLDER | LV_STATE_DEFAULT );
-lv_obj_set_style_text_opa(ui_TextArea1, 255, LV_PART_TEXTAREA_PLACEHOLDER| LV_STATE_DEFAULT);
+lv_obj_set_style_bg_color(lv_dropdown_get_list(ui_AMPMDropdown2), lv_color_hex(0x000000),  LV_PART_SELECTED | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(lv_dropdown_get_list(ui_AMPMDropdown2), 255,  LV_PART_SELECTED| LV_STATE_DEFAULT);
 
-ui_Keyboard1 = lv_keyboard_create(ui_Alarm);
-lv_obj_set_width( ui_Keyboard1, 428);
-lv_obj_set_height( ui_Keyboard1, 240);
-lv_obj_set_align( ui_Keyboard1, LV_ALIGN_CENTER );
+ui_CancelButton = lv_btn_create(ui_TimerSetPopup);
+lv_obj_set_width( ui_CancelButton, 115);
+lv_obj_set_height( ui_CancelButton, 82);
+lv_obj_set_x( ui_CancelButton, -60 );
+lv_obj_set_y( ui_CancelButton, 101 );
+lv_obj_set_align( ui_CancelButton, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_CancelButton, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_CancelButton, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_CancelButton, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_CancelButton, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_Label58 = lv_label_create(ui_CancelButton);
+lv_obj_set_width( ui_Label58, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Label58, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_align( ui_Label58, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Label58,"Cancel");
+ui_object_set_themeable_style_property(ui_Label58, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Label58, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
+lv_obj_set_style_text_font(ui_Label58, &lv_font_montserrat_24, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_AddButton = lv_btn_create(ui_TimerSetPopup);
+lv_obj_set_width( ui_AddButton, 115);
+lv_obj_set_height( ui_AddButton, 82);
+lv_obj_set_x( ui_AddButton, 60 );
+lv_obj_set_y( ui_AddButton, 101 );
+lv_obj_set_align( ui_AddButton, LV_ALIGN_CENTER );
+lv_obj_add_flag( ui_AddButton, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_AddButton, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_AddButton, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_AddButton, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_Label59 = lv_label_create(ui_AddButton);
+lv_obj_set_width( ui_Label59, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Label59, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_align( ui_Label59, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Label59,"Add");
+ui_object_set_themeable_style_property(ui_Label59, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Red);
+ui_object_set_themeable_style_property(ui_Label59, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Red);
+lv_obj_set_style_text_font(ui_Label59, &lv_font_montserrat_24, LV_PART_MAIN| LV_STATE_DEFAULT);
+} else { ui_AMPMDropdown2 = NULL; ui_CancelButton = NULL; ui_AddButton = NULL; ui_Label58 = NULL; ui_Label59 = NULL; }
+
+lv_obj_add_event_cb(ui_Alarm, ui_event_Alarm, LV_EVENT_ALL, NULL);
+
+// Hide popup permanently — SquareLine output renders the popup contents incorrectly,
+// causing artifacts on other screens. Alarms are added via cycling on the AddTimer button.
+lv_obj_add_flag(ui_TimerSetPopup, LV_OBJ_FLAG_HIDDEN);
+// (alarm list container stays hidden — will be shown lazily once user adds an alarm)
 
 }
 
@@ -434,44 +458,44 @@ void ui_Alarm_screen_destroy(void)
 
 // NULL screen variables
 ui_Alarm= NULL;
-ui_AlarmContainer= NULL;
-ui_Alarm1= NULL;
-ui_Label46= NULL;
-ui_Button11= NULL;
+ui_Timers= NULL;
+ui_Timer1= NULL;
+ui_DeleteTimer= NULL;
 ui_Label47= NULL;
+ui_Label46= NULL;
+ui_TimeLabel= NULL;
+ui_Timer2= NULL;
+ui_DeleteTimer1= NULL;
 ui_Label48= NULL;
-ui_Label55= NULL;
-ui_Alarm2= NULL;
 ui_Label49= NULL;
-ui_Button12= NULL;
+ui_TimeLabel1= NULL;
+ui_Timer3= NULL;
+ui_DeleteTimer2= NULL;
 ui_Label50= NULL;
 ui_Label51= NULL;
-ui_Label58= NULL;
-ui_Alarm3= NULL;
+ui_TimeLabel2= NULL;
+ui_Timer4= NULL;
+ui_DeleteTimer3= NULL;
 ui_Label52= NULL;
-ui_Button13= NULL;
 ui_Label53= NULL;
-ui_Label54= NULL;
-ui_Label57= NULL;
-ui_Button8= NULL;
+ui_TimeLabel3= NULL;
+ui_AddTimer= NULL;
 ui_Label45= NULL;
-ui_AlarmSetContainer= NULL;
+ui_TimerSetPopup= NULL;
 ui_Panel7= NULL;
-ui_Label60= NULL;
-ui_Button15= NULL;
-ui_Label61= NULL;
-ui_Button14= NULL;
-ui_Label59= NULL;
-ui_Button16= NULL;
-ui_Label62= NULL;
-ui_Button17= NULL;
-ui_Label63= NULL;
-ui_Button18= NULL;
+ui_AlarmTime= NULL;
+ui_HourPlus= NULL;
+ui_Label54= NULL;
+ui_HourMinus= NULL;
+ui_Label55= NULL;
+ui_MinuteMinus= NULL;
 ui_Label56= NULL;
-ui_Button19= NULL;
-ui_Label64= NULL;
-ui_Dropdown2= NULL;
-ui_TextArea1= NULL;
-ui_Keyboard1= NULL;
+ui_MinuteMinus1= NULL;
+ui_Label57= NULL;
+ui_AMPMDropdown2= NULL;
+ui_CancelButton= NULL;
+ui_Label58= NULL;
+ui_AddButton= NULL;
+ui_Label59= NULL;
 
 }

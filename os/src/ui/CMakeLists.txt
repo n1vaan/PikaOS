@@ -9,6 +9,7 @@ SET(SOURCES ui_comp_container1.c
     ui_Photo2.c
     ui_StopWatch.c
     ui_Alarm.c
+    ui_Pet.c
     ui_theme_manager.c
     ui_themes.c
     ui.c
