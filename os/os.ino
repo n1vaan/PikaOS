@@ -75,6 +75,18 @@ bool auto_dim_enabled = false;  // toggled by ui_Switch2 ("Dim")
 #define DARK_START_HOUR 20
 #define DARK_END_HOUR    6
 
+// Pull the PCM byte length out of a WAV's "data" sub-chunk header (offset 40, little-endian u32).
+// Trims off both the 44-byte RIFF/fmt header and any trailing metadata chunks (LIST/INFO/ID3).
+static inline unsigned int wav_pcm_size(const unsigned char *wav, unsigned int total_len) {
+    if (total_len < 44) return 0;
+    unsigned int size = (unsigned int)wav[40]
+                      | ((unsigned int)wav[41] << 8)
+                      | ((unsigned int)wav[42] << 16)
+                      | ((unsigned int)wav[43] << 24);
+    if (size > total_len - 44) size = total_len - 44;
+    return size;
+}
+
 /* ===== Pet Screen ===== */
 void pet_screen_clicked(lv_event_t * e) {
     if (PIKACHU_CLIP_COUNT == 0) return;
@@ -463,10 +475,10 @@ void audio_task(void *param) {
     } else if (play_chime) {
       int idx = chime_clip_idx;
       if (idx < 0 || idx >= (int)PIKACHU_CLIP_COUNT) idx = 0;
-      i2s.write((uint8_t *)pikachu_clips[idx], pikachu_clip_lens[idx]);
+      i2s.write((uint8_t *)pikachu_clips[idx] + 44, wav_pcm_size(pikachu_clips[idx], pikachu_clip_lens[idx]));
       play_chime = false; // one-shot
     } else if (play_alarm) {
-      i2s.write((uint8_t *)canon_pcm, canon_pcm_len);
+      i2s.write((uint8_t *)canon_pcm + 44, wav_pcm_size(canon_pcm, canon_pcm_len));
     } else {
       vTaskDelay(pdMS_TO_TICKS(100));
     }
