@@ -4,6 +4,7 @@
 #include "TouchDrvCSTXXX.hpp"  // Official Waveshare Touch Library
 #include <Wire.h>
 #include <WiFi.h>
+#include <Preferences.h>
 #include "time.h"
 #include "src/ui/ui.h"
 
@@ -75,6 +76,25 @@ bool auto_dim_enabled = false;  // toggled by ui_Switch2 ("Dim")
 #define DARK_START_HOUR 20
 #define DARK_END_HOUR    6
 
+/* ===== NVS persistence ===== */
+Preferences prefs;
+
+/* ===== Idle dimming ===== */
+unsigned long last_touch_ms = 0;
+unsigned long last_fade_step_ms = 0;
+int user_brightness_raw = 100;   // 0..100 (slider value); user's chosen "awake" brightness
+int current_brightness_raw = 100;// what the display is actually showing right now
+bool is_dimmed = false;
+#define IDLE_DIM_MS 30000UL      // start fading after 30s with no touch
+#define DIM_BRIGHTNESS_RAW 30    // dim target (~30%)
+#define DIM_FADE_INTERVAL_MS 30  // ms between brightness steps -> ~2.1s full fade
+
+/* ===== Pending volume (audio_task applies post-codec-init) ===== */
+volatile int pending_codec_vol = -1;  // -1 = none; otherwise 0..80 (codec scale)
+
+/* ===== Global press-feedback style ===== */
+static lv_style_t style_pressed;
+
 // Pull the PCM byte length out of a WAV's "data" sub-chunk header (offset 40, little-endian u32).
 // Trims off both the 44-byte RIFF/fmt header and any trailing metadata chunks (LIST/INFO/ID3).
 static inline unsigned int wav_pcm_size(const unsigned char *wav, unsigned int total_len) {
@@ -85,6 +105,109 @@ static inline unsigned int wav_pcm_size(const unsigned char *wav, unsigned int t
                       | ((unsigned int)wav[43] << 24);
     if (size > total_len - 44) size = total_len - 44;
     return size;
+}
+
+/* ===== Press feedback ===== */
+// Walk a screen and attach the global pressed style only to lv_btn descendants.
+// Limiting to buttons keeps the style well-scoped and skips containers/labels that
+// don't visually benefit from a scale-on-press.
+void apply_press_feedback_recursive(lv_obj_t *root) {
+    if (!root) return;
+    if (lv_obj_check_type(root, &lv_btn_class)) {
+        lv_obj_add_style(root, &style_pressed, LV_PART_MAIN | LV_STATE_PRESSED);
+    }
+    uint32_t cnt = lv_obj_get_child_cnt(root);
+    for (uint32_t i = 0; i < cnt; i++) {
+        apply_press_feedback_recursive(lv_obj_get_child(root, i));
+    }
+}
+
+void updateAllLogic(const struct tm& ti);  // forward decl; defined below
+
+/* ===== Boot splash + random face =====
+ * Holds a "PikaOS / Connecting..." screen until WiFi connects AND NTP gives us
+ * a real local time. Falls through after MAX_BOOT_WAIT_MS so a bad/missing
+ * network doesn't brick the boot — clocks will just show their default text
+ * until time syncs later.
+ */
+#define MIN_SPLASH_MS       800UL    // always show splash at least this long
+#define MAX_BOOT_WAIT_MS    15000UL  // give up waiting for WiFi+NTP after this
+
+void show_splash_and_load_random_face() {
+    // Pick a random face up front.
+    lv_obj_t *face_list[] = {
+        ui_PokeBallAnalog, ui_Screen1, ui_Analog, ui_Photo, ui_Photo2, ui_Pet
+    };
+    const int n_faces = sizeof(face_list) / sizeof(face_list[0]);
+    int pick = random(n_faces);
+    lv_obj_t *target_face = face_list[pick];
+    if (!target_face) target_face = ui_PokeBallAnalog;
+
+    // Build splash: yellow bg, "PikaOS" title, status label underneath.
+    lv_obj_t *splash = lv_obj_create(NULL);
+    lv_obj_clear_flag(splash, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_color(splash, lv_color_hex(0xFFB900), 0);
+    lv_obj_set_style_bg_opa(splash, 255, 0);
+
+    lv_obj_t *status = lv_label_create(splash);
+    lv_label_set_text(status, "Connecting...");
+    lv_obj_set_style_text_color(status, lv_color_hex(0x000000), 0);
+    lv_obj_center(status);
+
+    lv_scr_load(splash);
+
+    // Wait for WiFi connection + NTP sync (or timeout). Pump LVGL the whole time.
+    unsigned long start = millis();
+    bool announced_wifi = false;
+    bool ready = false;
+    struct tm ti;
+
+    while (millis() - start < MAX_BOOT_WAIT_MS) {
+        lv_timer_handler();
+        delay(50);
+
+        if (WiFi.status() == WL_CONNECTED) {
+            if (!announced_wifi) {
+                lv_label_set_text(status, "Syncing time...");
+                announced_wifi = true;
+            }
+            if (getLocalTime(&ti, 100)) {  // 100ms internal poll
+                // Require a sane post-2024 year to confirm NTP actually replied
+                if (ti.tm_year + 1900 >= 2024) {
+                    lv_label_set_text(status, "Ready");
+                    ready = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!ready) {
+        lv_label_set_text(status, "Offline mode");
+    }
+
+    // Always show the final splash state for at least MIN_SPLASH_MS — feels less abrupt.
+    unsigned long min_end = start + MIN_SPLASH_MS;
+    while (millis() < min_end) {
+        lv_timer_handler();
+        delay(5);
+    }
+    // Brief extra moment to read the final status line.
+    unsigned long linger = millis();
+    while (millis() - linger < 400) {
+        lv_timer_handler();
+        delay(5);
+    }
+
+    lv_scr_load(target_face);
+    lv_obj_del_async(splash);
+
+    // Paint the right time/date immediately on the new face so it doesn't
+    // briefly show the SquareLine default ("00:25 PM", "No Timer", etc.)
+    if (ready) {
+        lv_timer_handler();           // process the screen swap first
+        updateAllLogic(ti);           // fill the freshly-active face
+    }
 }
 
 /* ===== Pet Screen ===== */
@@ -153,6 +276,13 @@ void my_indev_feedback(lv_indev_drv_t *drv, uint8_t event_code) {
 void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data) {
   uint8_t touched = touch.getPoint(tx, ty, touch.getSupportTouchPoint());
   if (touched > 0) {
+    // Wake from idle-dim immediately on any touch (instant ramp-up; gradual ramp-down)
+    last_touch_ms = millis();
+    if (current_brightness_raw != user_brightness_raw) {
+        current_brightness_raw = user_brightness_raw;
+        gfx->setBrightness(map(current_brightness_raw, 0, 100, 0, 255));
+    }
+    is_dimmed = false;
     data->state = LV_INDEV_STATE_PR;
     data->point.x = tx[0];
     data->point.y = ty[0];
@@ -297,18 +427,26 @@ void handle_settings_events(lv_event_t * e) {
 
     // --- 1. Sliders (Brightness & Volume) ---
     if(code == LV_EVENT_VALUE_CHANGED) {
-        if (target == ui_Slider1) { 
+        if (target == ui_Slider1) {
             int val = lv_slider_get_value(ui_Slider1);
+            user_brightness_raw = val;
+            current_brightness_raw = val;
             gfx->setBrightness(map(val, 0, 100, 0, 255));
+            is_dimmed = false;
+            last_touch_ms = millis();
             lv_label_set_text_fmt(ui_Label30, "%d", val);
         }
         else if (target == ui_Slider2) {
             int val = lv_slider_get_value(ui_Slider2);
-            // Slider max (100) maps to codec volume 80 — full codec volume is painfully loud.
             int codec_vol = map(val, 0, 100, 0, 80);
             if(es_handle) es8311_voice_volume_set(es_handle, codec_vol, NULL);
             lv_label_set_text_fmt(ui_Label31, "%d", val);
         }
+    }
+    // Persist on release (slider drag fires VALUE_CHANGED constantly — don't hammer NVS)
+    if (code == LV_EVENT_RELEASED) {
+        if (target == ui_Slider1) prefs.putInt("bright", lv_slider_get_value(ui_Slider1));
+        else if (target == ui_Slider2) prefs.putInt("vol", lv_slider_get_value(ui_Slider2));
     }
 
     // --- 2. Keyboard Control (The "Enter" and "X" keys) ---
@@ -354,13 +492,16 @@ void handle_settings_events(lv_event_t * e) {
         is_dark = !is_dark;
         apply_dark_mode(is_dark);
         lv_obj_set_style_img_recolor(ui_Label26, is_dark ? lv_color_hex(0x2095F6) : lv_color_hex(0xFFFFFF), 0);
+        prefs.putBool("is_dark", is_dark);
     }
     if (target == ui_Switch2 && code == LV_EVENT_VALUE_CHANGED) {
         auto_dim_enabled = lv_obj_has_state(ui_Switch2, LV_STATE_CHECKED);
+        prefs.putBool("autodim", auto_dim_enabled);
         Serial.printf("Auto-dim %s\n", auto_dim_enabled ? "ON" : "OFF");
     }
     if (target == ui_Switch1 && code == LV_EVENT_VALUE_CHANGED) {
         chimes_enabled = lv_obj_has_state(ui_Switch1, LV_STATE_CHECKED);
+        prefs.putBool("chimes", chimes_enabled);
         Serial.printf("Chimes %s\n", chimes_enabled ? "ON" : "OFF");
     }
     // Inside handle_settings_events(lv_event_t * e)
@@ -397,9 +538,7 @@ void setup_settings_controls() {
     lv_obj_add_event_cb(ui_NetworkBox, handle_settings_events, LV_EVENT_FOCUSED, NULL);
     lv_obj_add_event_cb(ui_PasswordBox, handle_settings_events, LV_EVENT_FOCUSED, NULL);
     lv_obj_add_event_cb(ui_Keyboard, handle_settings_events, LV_EVENT_ALL, NULL);
-    // Set initial Slider positions to match current hardware
-    lv_slider_set_value(ui_Slider1, 100, LV_ANIM_OFF); // 80% Brightness
-    lv_slider_set_value(ui_Slider2, 100, LV_ANIM_OFF); // 90% Volume
+    // Slider positions are restored from NVS in setup() — don't overwrite them here.
     lv_obj_add_event_cb(ui_DarkMode, handle_settings_events, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(ui_Switch1, handle_settings_events, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(ui_Switch2, handle_settings_events, LV_EVENT_VALUE_CHANGED, NULL);
@@ -468,6 +607,12 @@ void audio_task(void *param) {
   
   Serial.println("Audio Task: Codec and I2S Ready.");
 
+  // Apply persisted volume now that the codec is alive
+  if (pending_codec_vol >= 0 && es_handle) {
+    es8311_voice_volume_set(es_handle, pending_codec_vol, NULL);
+    pending_codec_vol = -1;
+  }
+
   while (1) {
     if (play_click) {
       i2s.write((uint8_t *)click_pcm, click_pcm_len);
@@ -530,6 +675,15 @@ void setup() {
   Serial.begin(115200);
   delay(1000); // Give serial time to stabilize
   randomSeed(esp_random()); // hardware RNG so random() varies across boots
+
+  // Load persisted settings BEFORE display init so we can apply brightness immediately.
+  prefs.begin("pika", false);
+  user_brightness_raw = prefs.getInt("bright", 100);
+  int saved_volume     = prefs.getInt("vol",    100);
+  is_dark              = prefs.getBool("is_dark", true);
+  auto_dim_enabled     = prefs.getBool("autodim", false);
+  chimes_enabled       = prefs.getBool("chimes",  false);
+  pending_codec_vol    = map(saved_volume, 0, 100, 0, 80); // applied once codec is ready
   buf = (lv_color_t *)heap_caps_malloc(LCD_WIDTH * LCD_HEIGHT * sizeof(lv_color_t), MALLOC_CAP_SPIRAM);
   // Check if allocation worked
   if (buf == NULL) {
@@ -542,7 +696,9 @@ void setup() {
   digitalWrite(PA, HIGH);
 
   gfx->begin();
-  gfx->setBrightness(255);
+  current_brightness_raw = user_brightness_raw;
+  gfx->setBrightness(map(current_brightness_raw, 0, 100, 0, 255));
+  last_touch_ms = millis(); // start the idle-dim timer fresh
 
   // 3. LVGL Core Init
   lv_init();
@@ -575,12 +731,24 @@ void setup() {
 
   // 6. SquareLine UI Start
   ui_init();
-  
+
   // Disable scrolling for clocks
   lv_obj_clear_flag(ui_Analog, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(ui_PokeBallAnalog, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(ui_Screen1, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(ui_Timer, LV_OBJ_FLAG_SCROLLABLE);
+
+  // 6a. Sync Settings UI to persisted state BEFORE the splash so it's right when user opens Settings
+  lv_slider_set_value(ui_Slider1, user_brightness_raw, LV_ANIM_OFF);
+  lv_slider_set_value(ui_Slider2, prefs.getInt("vol", 100), LV_ANIM_OFF);
+  if (ui_Label30) lv_label_set_text_fmt(ui_Label30, "%d", user_brightness_raw);
+  if (ui_Label31) lv_label_set_text_fmt(ui_Label31, "%d", prefs.getInt("vol", 100));
+  if (chimes_enabled)   lv_obj_add_state(ui_Switch1, LV_STATE_CHECKED);
+  if (auto_dim_enabled) lv_obj_add_state(ui_Switch2, LV_STATE_CHECKED);
+  apply_dark_mode(is_dark);
+  if (ui_Label26) lv_obj_set_style_img_recolor(ui_Label26, is_dark ? lv_color_hex(0x2095F6) : lv_color_hex(0xFFFFFF), 0);
+
+  // (Press-feedback removed — buttons no longer shrink on press.)
 
   // 7. Custom Overlays & Events
   setupRegularAnalog();
@@ -632,6 +800,20 @@ void setup() {
   esp_timer_create(&timer_args, &timer);
   esp_timer_start_periodic(timer, LVGL_TICK_PERIOD_MS * 1000);
   xTaskCreatePinnedToCore(audio_task, "audio_task", 4096, NULL, 1, NULL, 1);
+
+  // Persist slider end-positions to NVS (debounced — fires on release, not every drag step)
+  lv_obj_add_event_cb(ui_Slider1, handle_settings_events, LV_EVENT_RELEASED, NULL);
+  lv_obj_add_event_cb(ui_Slider2, handle_settings_events, LV_EVENT_RELEASED, NULL);
+
+  // Boot splash + transition to a random face
+  show_splash_and_load_random_face();
+
+  // Greet the user with a random pikachu sound. audio_task may still be
+  // initializing the codec — once it's up, it'll see this flag and play.
+  if (PIKACHU_CLIP_COUNT > 0) {
+      chime_clip_idx = random(PIKACHU_CLIP_COUNT);
+      play_chime = true;
+  }
 }
 
 void loop() {
@@ -700,6 +882,19 @@ void loop() {
       }
   }
   delay(5);
+
+  // Idle dim: gradual fade once IDLE_DIM_MS of inactivity has passed
+  if (!is_dimmed && (millis() - last_touch_ms) > IDLE_DIM_MS) {
+      if (millis() - last_fade_step_ms >= DIM_FADE_INTERVAL_MS) {
+          last_fade_step_ms = millis();
+          if (current_brightness_raw > DIM_BRIGHTNESS_RAW) {
+              current_brightness_raw--;
+              gfx->setBrightness(map(current_brightness_raw, 0, 100, 0, 255));
+          }
+          if (current_brightness_raw <= DIM_BRIGHTNESS_RAW) is_dimmed = true;
+      }
+  }
+
   static unsigned long last_wifi_check = 0;
   if (millis() - last_wifi_check > 10000) {
       last_wifi_check = millis();
