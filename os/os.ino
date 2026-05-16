@@ -2,6 +2,7 @@
 #include "Arduino_GFX_Library.h"
 #include "pin_config.h"
 #include "TouchDrvCSTXXX.hpp"  // Official Waveshare Touch Library
+#include "SensorQMI8658.hpp"  // 6-axis IMU for shake detection
 #include <Wire.h>
 #include <WiFi.h>
 #include <Preferences.h>
@@ -27,8 +28,8 @@ bool chimes_enabled = false;          // toggled by ui_Switch1 ("Chimes")
 volatile bool play_click = false;     // One-shot UI click; cleared automatically.
 
 /* ===== WiFi Settings ===== */
-const char* ssid = "TANTRA";
-const char* password = "SK0029101978";
+const char* ssid = "J&J FutureNet-WiFi";
+const char* password = "Weare1family#";
 
 /* ===== LVGL Settings ===== */
 #define LVGL_TICK_PERIOD_MS 2
@@ -94,6 +95,16 @@ volatile int pending_codec_vol = -1;  // -1 = none; otherwise 0..80 (codec scale
 
 /* ===== Global press-feedback style ===== */
 static lv_style_t style_pressed;
+
+/* ===== Shake detection (QMI8658 accelerometer) ===== */
+SensorQMI8658 qmi;
+bool qmi_ready = false;
+unsigned long last_shake_ms = 0;
+// SensorLib's QMI8658.getAccelerometer actually returns values in g (gravity ≈ 1.0 at rest).
+// We measure deviation from that baseline to detect motion.
+#define GRAVITY_G            1.0f
+#define SHAKE_DELTA_G        0.5f    // ~0.5g of motion above 1g rest — clear deliberate shake
+#define SHAKE_DEBOUNCE_MS    2000UL
 
 // Pull the PCM byte length out of a WAV's "data" sub-chunk header (offset 40, little-endian u32).
 // Trims off both the 44-byte RIFF/fmt header and any trailing metadata chunks (LIST/INFO/ID3).
@@ -729,6 +740,18 @@ void setup() {
   indev_drv.feedback_cb = my_indev_feedback;
   lv_indev_drv_register(&indev_drv);
 
+  // 4b. IMU (QMI8658) for shake-to-pika
+  qmi_ready = qmi.begin(Wire, QMI8658_L_SLAVE_ADDRESS, IIC_SDA, IIC_SCL);
+  if (qmi_ready) {
+      qmi.configAccelerometer(SensorQMI8658::ACC_RANGE_4G,
+                              SensorQMI8658::ACC_ODR_125Hz,
+                              SensorQMI8658::LPF_MODE_0);
+      qmi.enableAccelerometer();
+      Serial.println("QMI8658 ready");
+  } else {
+      Serial.println("QMI8658 init failed (shake-to-pika disabled)");
+  }
+
   // 6. SquareLine UI Start
   ui_init();
 
@@ -882,6 +905,30 @@ void loop() {
       }
   }
   delay(5);
+
+  // Shake-to-pika: poll accelerometer, fire random chime when motion exceeds threshold
+  if (qmi_ready) {
+      float ax, ay, az;
+      if (qmi.getAccelerometer(ax, ay, az)) {
+          float mag   = sqrtf(ax * ax + ay * ay + az * az);
+          float delta = fabsf(mag - GRAVITY_G);
+
+          // Debug: print mag once every ~500ms so you can tune SHAKE_DELTA_MS2 to taste.
+          static unsigned long last_print_ms = 0;
+          if (millis() - last_print_ms > 500) {
+              last_print_ms = millis();
+              Serial.printf("accel mag=%.2f delta=%.2f\n", mag, delta);
+          }
+
+          if (delta > SHAKE_DELTA_G &&
+              (millis() - last_shake_ms) > SHAKE_DEBOUNCE_MS &&
+              PIKACHU_CLIP_COUNT > 0 && !play_chime) {
+              last_shake_ms = millis();
+              chime_clip_idx = random(PIKACHU_CLIP_COUNT);
+              play_chime = true;
+          }
+      }
+  }
 
   // Idle dim: gradual fade once IDLE_DIM_MS of inactivity has passed
   if (!is_dimmed && (millis() - last_touch_ms) > IDLE_DIM_MS) {
